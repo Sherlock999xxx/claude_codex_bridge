@@ -675,7 +675,9 @@ def test_materialize_gemini_home_config_projects_system_settings_into_managed_ho
             {
                 'env': {
                     'GEMINI_API_KEY': 'system-gemini-key',
+                    'GEMINI_MODEL': 'gemini-3.1-pro-preview',
                     'GOOGLE_API_KEY': 'system-google-key',
+                    'GOOGLE_GEMINI_BASE_URL': 'https://chatapi.onechats.ai',
                 },
                 'theme': 'Default',
             },
@@ -689,7 +691,9 @@ def test_materialize_gemini_home_config_projects_system_settings_into_managed_ho
 
     payload = json.loads(layout.settings_path.read_text(encoding='utf-8'))
     assert payload['env']['GEMINI_API_KEY'] == 'system-gemini-key'
+    assert payload['env']['GEMINI_MODEL'] == 'gemini-3.1-pro-preview'
     assert payload['env']['GOOGLE_API_KEY'] == 'system-google-key'
+    assert payload['env']['GOOGLE_GEMINI_BASE_URL'] == 'https://chatapi.onechats.ai'
     assert payload['theme'] == 'Default'
 
 
