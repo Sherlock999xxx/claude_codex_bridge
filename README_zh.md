@@ -913,6 +913,28 @@ ccb reinstall
 
 ---
 
+<div align="center">
+
+**稳定运行时：** Linux/macOS/WSL + tmux
+
+**原生 Windows mux：** 正在按 `psmux` 路线推进
+
+---
+
+**加入社区**
+
+📧 Email: bfly123@126.com
+💬 微信: seemseam-com
+🌐 Linux.do: https://linux.do
+
+感谢 [Linux.do 社区](https://linux.do) 在测试、反馈和讨论中的支持。
+
+<img src="assets/weixin.png" alt="微信群" width="300">
+
+</div>
+
+---
+
 <details>
 <summary><b>更新历史</b></summary>
 
