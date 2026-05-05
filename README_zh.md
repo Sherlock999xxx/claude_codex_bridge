@@ -103,6 +103,8 @@ cmd; writer:codex, reviewer:claude; qa:gemini(worktree)
 - **修复 Gemini 登录继承**：managed Gemini pane 现在会把 `GEMINI_CLI_HOME` 设置为隔离 home 根目录，让 Gemini CLI 从同一个 managed 边界读取投影后的 `.gemini/.env`、settings 与登录状态
 - **补充回归覆盖**：launcher 测试锁定 `HOME`、`GEMINI_CLI_HOME` 与 `GEMINI_ROOT` 的对齐契约，并防止 settings 再写入嵌套 `.gemini/.gemini`
 - **精简社区联系方式**：移除独立的 Linux.do 联系入口，保留联系区块后面的 Linux.do 社区致谢
+- **加固 macOS 安装兼容性**：`install.sh` 不再依赖 Bash 4 专属的 `${var@Q}` 展开，macOS 默认 Bash 3.2 也能正常写入安装元数据而不直接中断
+- **明确 watchdog 为可选依赖**：watchdog 自动安装失败时会打印当前 Python/pip 上下文并继续安装；未启用文件监听时，provider 回读仍会走轮询路径
 
 </details>
 

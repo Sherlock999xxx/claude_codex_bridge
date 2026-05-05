@@ -18,6 +18,8 @@ The repo-local agent memory file [AGENTS.md](/home/bfly/yunwei/ccb_source/AGENTS
 
 Diagnostics-specific rules live in [docs/ccbd-diagnostics-contract.md](/home/bfly/yunwei/ccb_source/docs/ccbd-diagnostics-contract.md). Startup/shutdown behavior and diagnostics must evolve together.
 
+Startup errors must preserve enough cause detail for the diagnostics contract to be useful. In particular, project tmux namespace preparation failures must not collapse original tmux stderr/stdout into only a generic foreground message such as `failed to prepare tmux server`.
+
 Module/function-level redesign for the project-scoped tmux namespace model lives in [docs/ccbd-project-namespace-lifecycle-plan.md](/home/bfly/yunwei/ccb_source/docs/ccbd-project-namespace-lifecycle-plan.md).
 
 Detailed redesign for pane recovery layering and continuous foreground attach lives in [docs/ccbd-pane-recovery-continuous-attach-plan.md](/home/bfly/yunwei/ccb_source/docs/ccbd-pane-recovery-continuous-attach-plan.md).

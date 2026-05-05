@@ -100,16 +100,21 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pytest tomli
 
+      - name: Install tmux
+        shell: bash
+        run: brew install tmux
+
       - name: Run install and update focused tests
         run: |
           pytest -q \
             test/test_build_macos_release_script.py \
             test/test_install_identity_output.py \
+            test/test_install_watchdog_optional.py \
             test/test_install_major_upgrade_guard.py \
             test/test_cli_management_update.py \
             test/test_cli_startup_update.py
 
-      - name: Smoke macOS installer branches
+      - name: Smoke macOS release install
         shell: bash
         run: |
           set -euo pipefail
@@ -134,6 +139,40 @@ jobs:
           [[ "$install_identity" == *"channel=stable"* ]]
           [[ "$install_identity" == *"version=0.0.0-ci"* ]]
           [[ "$install_identity" == *"Official release package install detected"* ]]
+
+          smoke_root="$(mktemp -d)"
+          mkdir -p "$smoke_root/home" "$smoke_root/bin"
+
+          HOME="$smoke_root/home" \
+          CODEX_INSTALL_PREFIX="$smoke_root/install" \
+          CODEX_BIN_DIR="$smoke_root/bin" \
+          CCB_LANG=en \
+          CCB_SOURCE_KIND=release \
+          CCB_BUILD_CHANNEL=stable \
+          CCB_BUILD_VERSION='0.0.0-ci-"quoted"' \
+          CCB_BUILD_TIME=2026-05-04T00:00:00Z \
+            bash -lc 'bash ./install.sh install'
+
+          python - "$smoke_root/install/BUILD_INFO.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          assert payload["version"] == '0.0.0-ci-"quoted"'
+          assert payload["install_mode"] == "release"
+          PY
+
+          test -d "$smoke_root/install/.venv"
+          grep -F "$smoke_root/install/.venv/bin/python" "$smoke_root/bin/ccb"
+          grep -F "$smoke_root/install/.venv/bin/python" "$smoke_root/bin/ask"
+          grep -F "$smoke_root/install/.venv/bin/python" "$smoke_root/bin/autonew"
+          grep -F "$smoke_root/install/.venv/bin/python" "$smoke_root/bin/ctx-transfer"
+          test -x "$smoke_root/bin/ccb"
+          test -x "$smoke_root/bin/ask"
+          test -x "$smoke_root/bin/autonew"
+          test -x "$smoke_root/bin/ctx-transfer"
+          "$smoke_root/install/.venv/bin/python" -c 'import watchdog'
 
       - name: Smoke macOS release packaging
         shell: bash

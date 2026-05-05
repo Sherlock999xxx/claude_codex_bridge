@@ -97,6 +97,8 @@ Historical note: older release notes below may mention `askd`, legacy flags, or 
 - **Gemini Login Inheritance Fixed**: managed Gemini panes now set `GEMINI_CLI_HOME` to the isolated home root so Gemini CLI reads the projected `.gemini/.env`, settings, and login state from the same managed boundary
 - **Regression Coverage Added**: launcher tests now lock the aligned `HOME`, `GEMINI_CLI_HOME`, and `GEMINI_ROOT` contract and guard against writing settings under nested `.gemini/.gemini`
 - **Community Contact Trimmed**: the standalone Linux.do contact entry was removed while keeping the Linux.do community acknowledgement below the contact block
+- **macOS Installer Compatibility Hardened**: `install.sh` no longer relies on Bash 4-only `${var@Q}` expansion, so macOS default Bash 3.2 can write install metadata without aborting
+- **Optional Watchdog Install Clarified**: watchdog auto-install failures now print the selected Python/pip context and continue installation, because provider readback still works through polling paths when file watchers are unavailable
 
 </details>
 

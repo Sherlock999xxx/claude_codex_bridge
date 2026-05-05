@@ -283,6 +283,11 @@ def test_doctor_summary_includes_socket_placement_fields(tmp_path: Path, monkeyp
 
     assert payload['ccbd']['preferred_socket_path'] == '/mnt/e/repo/.ccb/ccbd/ccbd.sock'
     assert payload['ccbd']['effective_socket_path'] == '/tmp/ccb-runtime/ccbd-proj.sock'
+    assert payload['ccbd']['preferred_socket_path_bytes'] == len('/mnt/e/repo/.ccb/ccbd/ccbd.sock'.encode())
+    assert payload['ccbd']['effective_socket_path_bytes'] == len('/tmp/ccb-runtime/ccbd-proj.sock'.encode())
     assert payload['ccbd']['socket_root_kind'] == 'runtime'
     assert payload['ccbd']['socket_fallback_reason'] == 'unsupported_filesystem'
     assert payload['ccbd']['tmux_effective_socket_path'] == '/tmp/ccb-runtime/tmux-proj.sock'
+    assert payload['ccbd']['tmux_preferred_socket_path_bytes'] == len('/mnt/e/repo/.ccb/ccbd/tmux.sock'.encode())
+    assert payload['ccbd']['tmux_effective_socket_path_bytes'] == len('/tmp/ccb-runtime/tmux-proj.sock'.encode())
+    assert payload['ccbd']['tmux_start_server_command'] == 'tmux -S /tmp/ccb-runtime/tmux-proj.sock start-server'

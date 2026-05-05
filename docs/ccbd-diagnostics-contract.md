@@ -70,6 +70,7 @@ Rules:
 - daemon boot must write a startup report
 - foreground `start` must overwrite it with the more specific `start_command` report
 - startup report write failure must not replace the original startup error with a diagnostics-only error
+- when project tmux preparation fails, `failure_reason` must preserve the user-facing startup failure plus tmux command context, the effective tmux socket path, socket path byte length when known, and original tmux stderr/stdout detail when available
 
 ### 3.3 Shutdown Report
 
@@ -131,6 +132,7 @@ Rules:
 - `ping('ccbd')` and `doctor` should surface start-policy summary fields when available
 - `ping('ccbd')` and `doctor` must surface namespace summary fields such as epoch, tmux socket path, session name, and latest lifecycle event when available
 - `ping('ccbd')` and `doctor` must surface current socket placement diagnostics, including preferred/effective socket path, root kind, fallback reason, and filesystem hint when known
+- `doctor` must also surface preferred/effective socket path byte lengths and an equivalent `tmux -S <effective-socket> start-server` command when a project tmux socket path is known, so macOS and WSL socket pathname failures can be diagnosed from one report
 - malformed namespace diagnostics must surface as diagnostics errors, not silently disappear
 
 ### 3.6 Doctor Read Path
@@ -141,6 +143,7 @@ Rules:
 
 - it must summarize current backend inspection plus latest persisted reports
 - agent binding diagnostics must include both `tmux_socket_name` and `tmux_socket_path` when known so project-scoped namespace bugs can be diagnosed from logs alone
+- startup failure diagnostics must retain chained cause detail in CLI output and in `ccbd_startup_last_failure_reason` when the backend recorded it
 - Codex agent diagnostics should surface managed in-pane session-switch state
   when `.ccb/agents/<agent>/provider-runtime/codex/session-switch.json`
   exists, including state, reason, commit status, and candidate session

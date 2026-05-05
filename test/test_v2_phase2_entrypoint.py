@@ -505,6 +505,31 @@ def test_phase2_reports_subprocess_failure_without_traceback(monkeypatch, tmp_pa
     assert 'Traceback' not in stderr
 
 
+def test_phase2_reports_exception_cause_without_traceback(monkeypatch, tmp_path: Path) -> None:
+    project_root = tmp_path / 'repo-cause'
+    _write(project_root / '.ccb' / 'ccb.config', 'agent1:codex\n')
+
+    def _raise_wrapped_error(context):
+        del context
+        cause = RuntimeError('tmux detail: socket path too long')
+        raise RuntimeError('failed to prepare tmux server') from cause
+
+    monkeypatch.setattr('cli.phase2_runtime.handlers_start.attach_started_project_namespace', _raise_wrapped_error)
+    monkeypatch.setattr(sys.stdin, 'isatty', lambda: True)
+
+    stdout = _TtyStringIO()
+    stderr_io = StringIO()
+    code = maybe_handle_phase2([], cwd=project_root, stdout=stdout, stderr=stderr_io)
+    stderr = stderr_io.getvalue()
+
+    assert code == 1
+    assert stdout.getvalue() == ''
+    assert 'command_status: failed' in stderr
+    assert 'error: failed to prepare tmux server' in stderr
+    assert 'error_cause: tmux detail: socket path too long' in stderr
+    assert 'Traceback' not in stderr
+
+
 def test_phase2_removed_attach_command_reports_guidance(tmp_path: Path) -> None:
     project_root = tmp_path / 'repo-removed-attach'
     project_root.mkdir()
