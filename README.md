@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/Every_Model_Controllable-CF1322?style=for-the-badge" alt="Every Model Controllable">
 </p>
 
-[![Version](https://img.shields.io/badge/version-6.0.25-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-6.0.26-orange.svg)]()
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg)]()
 
 **English** | [Chinese](README_zh.md)
@@ -92,13 +92,20 @@ This layout means:
 Historical note: older release notes below may mention `askd`, legacy flags, or removed commands. Those references are kept only as changelog history and do not redefine the current CLI surface.
 
 <details open>
+<summary><b>v6.0.26</b> - macOS Install And Claude Ask Cleanup</summary>
+
+- **macOS Release Install Fixed**: release installs keep generated CLI wrappers bound to the managed `.venv` Python, avoiding environment drift when optional dependencies such as `watchdog` are installed
+- **WSL Install Tests Unblocked**: watchdog install regression tests explicitly confirm WSL non-interactive install mode so CI covers the intended optional-dependency path
+- **Claude Ask Prompt Slimmed Down**: managed Claude `ask` no longer injects local ask skill runtime text into the prompt body, keeping agent-to-agent asks limited to the request anchor and the user's original message
+
+</details>
+
+<details>
 <summary><b>v6.0.25</b> - Gemini Managed Home Alignment</summary>
 
 - **Gemini Login Inheritance Fixed**: managed Gemini panes now set `GEMINI_CLI_HOME` to the isolated home root so Gemini CLI reads the projected `.gemini/.env`, settings, and login state from the same managed boundary
 - **Regression Coverage Added**: launcher tests now lock the aligned `HOME`, `GEMINI_CLI_HOME`, and `GEMINI_ROOT` contract and guard against writing settings under nested `.gemini/.gemini`
 - **Community Contact Trimmed**: the standalone Linux.do contact entry was removed while keeping the Linux.do community acknowledgement below the contact block
-- **macOS Installer Compatibility Hardened**: `install.sh` no longer relies on Bash 4-only `${var@Q}` expansion, so macOS default Bash 3.2 can write install metadata without aborting
-- **Optional Watchdog Install Clarified**: watchdog auto-install failures now print the selected Python/pip context and continue installation, because provider readback still works through polling paths when file watchers are unavailable
 
 </details>
 

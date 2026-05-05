@@ -2,9 +2,13 @@
 
 ## Unreleased
 
-### Claude Ask Prompt Cleanup
+## v6.0.26 (2026-05-05)
 
-- **Ask Prompt Slimmed Down**: managed Claude `ask` no longer injects the local ask skill runtime text into the prompt body, so agent-to-agent asks stay limited to the request anchor and the user's original message
+### macOS Install And Claude Ask Cleanup
+
+- **macOS Release Install Fixed**: release installs now keep generated CLI wrappers bound to the managed `.venv` Python, avoiding environment drift when optional dependencies such as `watchdog` are installed
+- **WSL Install Tests Unblocked**: watchdog install regression tests now explicitly confirm WSL non-interactive install mode so CI exercises the intended optional-dependency path
+- **Claude Ask Prompt Slimmed Down**: managed Claude `ask` no longer injects local ask skill runtime text into the prompt body, so agent-to-agent asks stay limited to the request anchor and the user's original message
 
 ## v6.0.25 (2026-05-02)
 

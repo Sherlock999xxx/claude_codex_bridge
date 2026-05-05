@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/模型皆可控-CF1322?style=for-the-badge" alt="模型皆可控">
 </p>
 
-[![Version](https://img.shields.io/badge/version-6.0.25-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-6.0.26-orange.svg)]()
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg)]()
 
 [English](README.md) | **中文**
@@ -98,13 +98,20 @@ cmd; writer:codex, reviewer:claude; qa:gemini(worktree)
 历史说明：下面较旧的发布记录里仍可能出现 `askd`、旧 flag 或已移除命令。这些内容仅作为 changelog 历史保留，不代表当前 CLI 入口。
 
 <details open>
+<summary><b>v6.0.26</b> - macOS 安装与 Claude Ask 清理</summary>
+
+- **修复 macOS Release 安装**：release 安装生成的 CLI wrapper 现在会绑定 managed `.venv` Python，避免安装 `watchdog` 等可选依赖后运行环境漂移
+- **修复 WSL 安装测试**：watchdog 安装回归测试会显式确认 WSL 非交互安装模式，让 CI 覆盖预期的可选依赖路径
+- **精简 Claude Ask Prompt**：managed Claude `ask` 不再把本地 ask skill runtime 文本注入 prompt body，agent 间消息只保留 request anchor 和用户原始消息
+
+</details>
+
+<details>
 <summary><b>v6.0.25</b> - Gemini Managed Home 对齐</summary>
 
 - **修复 Gemini 登录继承**：managed Gemini pane 现在会把 `GEMINI_CLI_HOME` 设置为隔离 home 根目录，让 Gemini CLI 从同一个 managed 边界读取投影后的 `.gemini/.env`、settings 与登录状态
 - **补充回归覆盖**：launcher 测试锁定 `HOME`、`GEMINI_CLI_HOME` 与 `GEMINI_ROOT` 的对齐契约，并防止 settings 再写入嵌套 `.gemini/.gemini`
 - **精简社区联系方式**：移除独立的 Linux.do 联系入口，保留联系区块后面的 Linux.do 社区致谢
-- **加固 macOS 安装兼容性**：`install.sh` 不再依赖 Bash 4 专属的 `${var@Q}` 展开，macOS 默认 Bash 3.2 也能正常写入安装元数据而不直接中断
-- **明确 watchdog 为可选依赖**：watchdog 自动安装失败时会打印当前 Python/pip 上下文并继续安装；未启用文件监听时，provider 回读仍会走轮询路径
 
 </details>
 

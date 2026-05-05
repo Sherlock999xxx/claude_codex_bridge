@@ -19,6 +19,7 @@ def _run_install_snippet(tmp_path: Path, body: str) -> subprocess.CompletedProce
             "CODEX_INSTALL_PREFIX": str(tmp_path / "install"),
             "CODEX_BIN_DIR": str(tmp_path / "bin"),
             "CCB_LANG": "en",
+            "CCB_INSTALL_ASSUME_YES": "1",
         }
     )
     command = textwrap.dedent(
