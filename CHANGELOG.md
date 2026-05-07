@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## v6.0.28 (2026-05-07)
+
+### WSL Control Plane Socket Hardening
+
+- **WSL Control Plane Startup Hardened**: keeper and daemon readiness probes now share the configured control-plane RPC timeout instead of using shorter hardcoded budgets that could misread a slow mounted-drive startup as config drift
+- **Socket Server Accept Path Decoupled**: ccbd now accepts connections separately from a serialized worker lane, so one slow or incomplete client request no longer blocks new control-plane probes or heartbeats
+- **Transient Connect Retry Added**: Unix socket clients retry only short-lived connect races within the existing timeout budget, without retrying already-sent RPC requests or mutating operations
+- **README Refreshed**: the public README was reorganized around the current agent CLI hub/team workflow and updated release guidance
+
 ## v6.0.27 (2026-05-06)
 
 ### macOS Foreground Attach Timeout Hardening
