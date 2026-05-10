@@ -610,6 +610,14 @@ WSL:
   Phase D shared cache must be disabled and per-agent cache retained
 - `ccb doctor storage` must report that relocation is required before shared
   provider cache can be enabled on drvfs
+- shared-cache disabled reason codes are:
+  - `not_implemented`: shared cache redirection is not implemented for this
+    project yet
+  - `not_implemented_runtime_relocated`: runtime state is relocated but
+    provider shared-cache redirection is still not implemented
+  - `wsl_drvfs_requires_runtime_relocation`: the anchor is on drvfs without a
+    usable relocated runtime-state root; shared cache root must be reported as
+    unavailable
 
 macOS:
 
@@ -745,6 +753,20 @@ Implemented:
   per-entry class/provider/agent/size metadata.
 - `ccb doctor storage` reports `shared_cache_status=disabled` and a disabled
   reason while Phase D shared-cache redirection remains unimplemented.
+- `PathLayout` exposes `shared_cache_dir` and `provider_shared_cache_dir()` as
+  the single future shared-cache root under the effective runtime-state root,
+  so WSL relocation will not split shared cache back onto unsupported anchor
+  filesystems. The provider-specific helper accepts only canonical shared-cache
+  candidate providers (`claude`, `codex`, `gemini`) to avoid split cache buckets
+  from display names or non-normalized provider strings.
+- `PathLayout.ensure_provider_shared_cache_dir()` is the only approved shared
+  cache creation helper. It writes a versioned `MANIFEST.json`, creates under
+  the effective runtime-state root, and hard-fails on WSL drvfs project anchors
+  unless runtime-state relocation is active.
+- `ccb doctor storage` emits `shared_cache_root` and
+  `shared_cache_root_usable`. While shared cache is disabled the usable flag is
+  `false`; when a WSL drvfs anchor is not relocated, `shared_cache_root` is
+  `null` rather than an unsafe project-mounted path.
 - Provider auth/OAuth files classify as `SECRET`, not `PROJECTED_CONFIG`.
 - Codex `.tmp/plugins/` plus `.tmp/plugins.sha` classify as
   `STARTUP_AUTHORITY_BUNDLE`, not rebuildable cache.
@@ -808,12 +830,12 @@ Implemented:
   users do not mistake Phase C cache cleanup for Phase D shared-cache
   redirection.
 - Linux real validation passed with the current Phase A-C implementation:
-  - full unit suite: `1738 passed`
+  - full unit suite: `1747 passed`
   - communication matrix: `test/system_comm_matrix.sh` passed, covering mixed
     providers, same-provider dual agents, cross-project isolation, `watch`,
     `pend`, and kill cleanup
   - fastpath stress: `test/system_fastpath_stress.sh` passed with 60 asks,
-    submit p95 `220ms`, max `240ms`
+    submit p95 `225ms`, max `252ms`
   - shortened Linux soak after the shutdown reply-delivery fix:
     `CCB_LINUX_SOAK_SECONDS=180 CCB_LINUX_SOAK_KILL_EVERY=3
     test/system_linux_soak.sh` passed with 14 iterations, repeated

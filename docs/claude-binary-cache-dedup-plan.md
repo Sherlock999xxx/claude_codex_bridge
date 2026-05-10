@@ -304,11 +304,15 @@ Implemented:
   current symlink target and one rollback version.
 - `ccb cleanup` reports symlinked `versions/` directories instead of silently
   ignoring them.
+- Managed Claude startup preparation records a de-duplicated
+  `claude_binary_cache_drift` agent event when a per-agent `versions/` cache
+  appears, so diagnostics can explain why provider-state is growing again.
 
 Not implemented yet:
 
 - Shared binary cache under `.ccb/shared-cache/claude/`.
-- Startup guard that prevents future per-agent binary-cache drift.
+- Active startup guard that redirects or removes future per-agent binary-cache
+  drift once shared cache is enabled.
 
 The next Claude-specific step is shared binary-cache evaluation after Linux,
 macOS, and WSL cleanup validation.

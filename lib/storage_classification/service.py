@@ -381,6 +381,7 @@ def _summary_payload(layout: PathLayout, entries: list[StorageEntry]) -> dict[st
             _accumulate(by_provider[entry.provider], entry.size_bytes)
         if entry.agent:
             _accumulate(by_agent[entry.agent], entry.size_bytes)
+    shared_cache_reason = _shared_cache_disabled_reason(layout)
     return {
         'schema_version': SCHEMA_VERSION,
         'generated_at': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
@@ -388,8 +389,10 @@ def _summary_payload(layout: PathLayout, entries: list[StorageEntry]) -> dict[st
         'project_id': layout.project_id,
         'runtime_root_kind': layout.runtime_state_placement.root_kind,
         'runtime_state_root': str(layout.runtime_state_root),
+        'shared_cache_root': _shared_cache_root(layout, disabled_reason=shared_cache_reason),
+        'shared_cache_root_usable': False,
         'shared_cache_status': 'disabled',
-        'shared_cache_reason': _shared_cache_disabled_reason(layout),
+        'shared_cache_reason': shared_cache_reason,
         'total_bytes': total_bytes,
         'total_count': len(entries),
         'by_class': dict(sorted(by_class.items())),
@@ -397,6 +400,12 @@ def _summary_payload(layout: PathLayout, entries: list[StorageEntry]) -> dict[st
         'by_agent': dict(sorted(by_agent.items())),
         'entries': [entry.to_record() for entry in sorted(entries, key=lambda item: item.size_bytes, reverse=True)],
     }
+
+
+def _shared_cache_root(layout: PathLayout, *, disabled_reason: str) -> str | None:
+    if disabled_reason == 'wsl_drvfs_requires_runtime_relocation':
+        return None
+    return str(layout.shared_cache_dir)
 
 
 def _shared_cache_disabled_reason(layout: PathLayout) -> str:

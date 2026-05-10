@@ -192,6 +192,8 @@ def render_doctor_storage(payload: Mapping[str, object]) -> tuple[str, ...]:
         f'project_id: {payload.get("project_id")}',
         f'storage_runtime_root_kind: {payload.get("runtime_root_kind")}',
         f'storage_runtime_state_root: {payload.get("runtime_state_root")}',
+        f'storage_shared_cache_root: {payload.get("shared_cache_root") or ""}',
+        f'storage_shared_cache_root_usable: {payload.get("shared_cache_root_usable", False)}',
         f'storage_shared_cache_status: {payload.get("shared_cache_status")}',
         f'storage_shared_cache_reason: {payload.get("shared_cache_reason")}',
         f'storage_total_bytes: {payload.get("total_bytes")}',

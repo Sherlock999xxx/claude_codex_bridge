@@ -152,6 +152,99 @@ def test_prepare_provider_workspace_materializes_claude_settings_before_hooks(tm
     assert not (workspace / '.claude').exists()
 
 
+def test_prepare_provider_workspace_records_claude_binary_cache_drift_once(tmp_path: Path, monkeypatch) -> None:
+    project_root = tmp_path / 'repo'
+    workspace = project_root / 'workspace'
+    system_home = tmp_path / 'system-home'
+    monkeypatch.setenv('HOME', str(system_home))
+    layout = PathLayout(project_root)
+    versions_dir = layout.agent_provider_state_dir('agent1', 'claude') / 'home' / '.local' / 'share' / 'claude' / 'versions'
+    (versions_dir / '2.1.137').mkdir(parents=True, exist_ok=True)
+    (versions_dir / '2.1.137' / 'claude').write_text('binary\n', encoding='utf-8')
+
+    for refresh_profile in (True, False):
+        prepare_provider_workspace(
+            layout=layout,
+            spec=_spec('agent1'),
+            workspace_path=workspace,
+            completion_dir=layout.agent_provider_runtime_dir('agent1', 'claude') / 'completion',
+            agent_name='agent1',
+            refresh_profile=refresh_profile,
+        )
+
+    events = [
+        json.loads(line)
+        for line in layout.agent_events_path('agent1').read_text(encoding='utf-8').splitlines()
+        if line.strip()
+    ]
+    drift_events = [event for event in events if event.get('event_type') == 'claude_binary_cache_drift']
+    assert len(drift_events) == 1
+    assert drift_events[0]['reason'] == 'per_agent_versions_cache_present'
+    assert drift_events[0]['version_names'] == ['2.1.137']
+
+
+def test_prepare_provider_workspace_records_new_claude_binary_cache_signature(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    project_root = tmp_path / 'repo'
+    workspace = project_root / 'workspace'
+    monkeypatch.setenv('HOME', str(tmp_path / 'system-home'))
+    layout = PathLayout(project_root)
+    versions_dir = layout.agent_provider_state_dir('agent1', 'claude') / 'home' / '.local' / 'share' / 'claude' / 'versions'
+    (versions_dir / '2.1.137').mkdir(parents=True, exist_ok=True)
+
+    prepare_provider_workspace(
+        layout=layout,
+        spec=_spec('agent1'),
+        workspace_path=workspace,
+        completion_dir=layout.agent_provider_runtime_dir('agent1', 'claude') / 'completion',
+        agent_name='agent1',
+        refresh_profile=True,
+    )
+    (versions_dir / '2.1.138').mkdir(parents=True, exist_ok=True)
+    prepare_provider_workspace(
+        layout=layout,
+        spec=_spec('agent1'),
+        workspace_path=workspace,
+        completion_dir=layout.agent_provider_runtime_dir('agent1', 'claude') / 'completion',
+        agent_name='agent1',
+        refresh_profile=False,
+    )
+
+    events = [
+        json.loads(line)
+        for line in layout.agent_events_path('agent1').read_text(encoding='utf-8').splitlines()
+        if line.strip()
+    ]
+    drift_events = [event for event in events if event.get('event_type') == 'claude_binary_cache_drift']
+    assert [event['version_names'] for event in drift_events] == [['2.1.137'], ['2.1.137', '2.1.138']]
+
+
+def test_prepare_provider_workspace_does_not_record_claude_binary_cache_drift_when_absent(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    project_root = tmp_path / 'repo'
+    monkeypatch.setenv('HOME', str(tmp_path / 'system-home'))
+    layout = PathLayout(project_root)
+
+    prepare_provider_workspace(
+        layout=layout,
+        spec=_spec('agent1'),
+        workspace_path=project_root / 'workspace',
+        completion_dir=layout.agent_provider_runtime_dir('agent1', 'claude') / 'completion',
+        agent_name='agent1',
+        refresh_profile=True,
+    )
+
+    events_path = layout.agent_events_path('agent1')
+    if not events_path.exists():
+        return
+    events = [json.loads(line) for line in events_path.read_text(encoding='utf-8').splitlines() if line.strip()]
+    assert all(event.get('event_type') != 'claude_binary_cache_drift' for event in events)
+
+
 def test_prepare_provider_workspace_uses_account_home_when_current_home_is_managed_claude(
     tmp_path: Path,
     monkeypatch,

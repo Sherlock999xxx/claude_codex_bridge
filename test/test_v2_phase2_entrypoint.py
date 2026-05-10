@@ -809,6 +809,8 @@ def test_phase2_doctor_storage_renders_storage_summary(monkeypatch, tmp_path: Pa
             'project_id': context.project.project_id,
             'runtime_root_kind': 'project',
             'runtime_state_root': str(context.paths.runtime_state_root),
+            'shared_cache_root': str(context.paths.shared_cache_dir),
+            'shared_cache_root_usable': False,
             'shared_cache_status': 'disabled',
             'shared_cache_reason': 'not_implemented',
             'total_bytes': 12,
@@ -836,6 +838,8 @@ def test_phase2_doctor_storage_renders_storage_summary(monkeypatch, tmp_path: Pa
     assert code == 0, stderr
     assert 'storage_status: ok' in stdout
     assert 'storage_shared_cache_status: disabled' in stdout
+    assert f'storage_shared_cache_root: {PathLayout(project_root).shared_cache_dir}' in stdout
+    assert 'storage_shared_cache_root_usable: False' in stdout
     assert 'storage_shared_cache_reason: not_implemented' in stdout
     assert 'storage_class: class=secret bytes=4 count=1' in stdout
     assert 'storage_provider: provider=codex bytes=12 count=2' in stdout
@@ -855,6 +859,8 @@ def test_phase2_doctor_storage_json_emits_full_payload(monkeypatch, tmp_path: Pa
             'project_id': context.project.project_id,
             'runtime_root_kind': 'project',
             'runtime_state_root': str(context.paths.runtime_state_root),
+            'shared_cache_root': str(context.paths.shared_cache_dir),
+            'shared_cache_root_usable': False,
             'shared_cache_status': 'disabled',
             'shared_cache_reason': 'not_implemented',
             'total_bytes': 0,
@@ -872,6 +878,7 @@ def test_phase2_doctor_storage_json_emits_full_payload(monkeypatch, tmp_path: Pa
     payload = json.loads(stdout)
     assert payload['schema_version'] == 1
     assert payload['shared_cache_status'] == 'disabled'
+    assert payload['shared_cache_root_usable'] is False
     assert payload['entries'] == []
 
 

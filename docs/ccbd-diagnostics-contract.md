@@ -169,6 +169,14 @@ Rules:
   when `.ccb/agents/<agent>/provider-runtime/codex/session-switch.json`
   exists, including state, reason, commit status, and candidate session
   identity
+- `doctor storage` must surface the effective `shared_cache_root`,
+  `shared_cache_root_usable`, and shared-cache status/reason, so WSL relocation
+  and future provider cache sharing decisions are diagnosable from the same
+  storage view. When the reason is `wsl_drvfs_requires_runtime_relocation`, the
+  root must be reported as unavailable instead of pointing at an unsafe drvfs
+  path. Supported disabled reason codes are `not_implemented`,
+  `not_implemented_runtime_relocated`, and
+  `wsl_drvfs_requires_runtime_relocation`.
 - it must not crash only because one diagnostics artifact is missing or malformed
 - malformed diagnostics files must surface as diagnostics errors, not silent omission
 
