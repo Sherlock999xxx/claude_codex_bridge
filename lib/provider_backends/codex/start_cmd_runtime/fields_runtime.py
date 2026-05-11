@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Mapping
 
-from .parsing import extract_resume_session_id, looks_like_bare_resume_cmd
-from .rewriting import build_resume_start_cmd
+from .parsing import extract_resume_session_id, looks_like_bare_resume_cmd, resume_command_missing_session_id
+from .rewriting import build_resume_start_cmd, safe_non_resume_start_cmd
 
 
 def effective_start_cmd(data: Mapping[str, object]) -> str:
@@ -14,7 +14,18 @@ def effective_start_cmd(data: Mapping[str, object]) -> str:
     session_id = resolved_session_id(data, start_cmd=start_cmd, codex_start_cmd=codex_start_cmd)
     if should_rebuild_resume_command(session_id=session_id, start_cmd=start_cmd, codex_start_cmd=codex_start_cmd):
         return build_resume_start_cmd(start_cmd, session_id)
-    return codex_start_cmd or start_cmd
+    return first_usable_start_cmd(codex_start_cmd, start_cmd)
+
+
+def first_usable_start_cmd(*commands: str) -> str:
+    for command in commands:
+        if command and not resume_command_missing_session_id(command):
+            return command
+    for command in commands:
+        fallback = safe_non_resume_start_cmd(command)
+        if fallback:
+            return fallback
+    return ""
 
 
 def persist_resume_start_cmd_fields(data: dict[str, object], session_id: object) -> str | None:
@@ -68,7 +79,11 @@ def should_rebuild_resume_command(*, session_id: str, start_cmd: str, codex_star
     return bool(
         session_id
         and start_cmd
-        and (not codex_start_cmd or looks_like_bare_resume_cmd(codex_start_cmd))
+        and (
+            not codex_start_cmd
+            or looks_like_bare_resume_cmd(codex_start_cmd)
+            or resume_command_missing_session_id(codex_start_cmd)
+        )
     )
 
 

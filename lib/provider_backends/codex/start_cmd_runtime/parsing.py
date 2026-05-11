@@ -24,6 +24,23 @@ def looks_like_bare_resume_cmd(command: str) -> bool:
     return _tokens_form_bare_resume(tokens)
 
 
+def resume_command_missing_session_id(command: object) -> bool:
+    raw = _normalized_command(command)
+    if not raw:
+        return False
+    _shell_prefix, _separator, codex_segment = raw.rpartition(';')
+    tokens = _tokenize_command(codex_segment or raw)
+    if not tokens:
+        return False
+    codex_index = find_codex_token_index(tokens)
+    if codex_index is None:
+        return False
+    for index in range(codex_index + 1, len(tokens)):
+        if tokens[index] == 'resume':
+            return index + 1 >= len(tokens)
+    return False
+
+
 def _normalized_command(command: object) -> str:
     return str(command or '').strip()
 
@@ -82,4 +99,9 @@ def find_codex_token_index(tokens: list[str]) -> int | None:
     return None
 
 
-__all__ = ['extract_resume_session_id', 'find_codex_token_index', 'looks_like_bare_resume_cmd']
+__all__ = [
+    'extract_resume_session_id',
+    'find_codex_token_index',
+    'looks_like_bare_resume_cmd',
+    'resume_command_missing_session_id',
+]

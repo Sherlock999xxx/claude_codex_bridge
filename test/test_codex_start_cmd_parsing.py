@@ -3,8 +3,9 @@ from __future__ import annotations
 from provider_backends.codex.start_cmd_runtime.parsing import (
     extract_resume_session_id,
     looks_like_bare_resume_cmd,
+    resume_command_missing_session_id,
 )
-from provider_backends.codex.start_cmd_runtime.rewriting import strip_resume_start_cmd
+from provider_backends.codex.start_cmd_runtime.rewriting import build_resume_start_cmd, strip_resume_start_cmd
 
 
 def test_extract_resume_session_id_prefers_regex_match() -> None:
@@ -40,3 +41,15 @@ def test_strip_resume_start_cmd_removes_resume_suffix_from_shell_wrapped_command
         'export CODEX_HOME=/tmp/home CODEX_SESSION_ROOT=/tmp/home/sessions; '
         'codex -m gpt-5.4'
     )
+
+
+def test_resume_command_missing_session_id_detects_bare_resume_without_id() -> None:
+    assert resume_command_missing_session_id('codex resume') is True
+    assert resume_command_missing_session_id('export CODEX_HOME=/tmp/home; codex -m gpt-5.4 resume') is True
+    assert resume_command_missing_session_id('codex resume sess-789') is False
+
+
+def test_build_resume_start_cmd_strips_bare_resume_when_session_id_is_empty() -> None:
+    command = 'export CODEX_HOME=/tmp/home; codex -m gpt-5.4 resume'
+
+    assert build_resume_start_cmd(command, '') == 'export CODEX_HOME=/tmp/home; codex -m gpt-5.4'

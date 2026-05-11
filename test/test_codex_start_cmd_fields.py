@@ -42,3 +42,33 @@ def test_resume_template_command_prefers_non_resume_base_command() -> None:
     }
 
     assert resume_template_command(data) == "export CODEX_RUNTIME_DIR=/tmp/demo; codex -c disable_paste_burst=true"
+
+
+def test_effective_start_cmd_strips_bare_resume_without_session_id() -> None:
+    data = {
+        "codex_start_cmd": "export CODEX_RUNTIME_DIR=/tmp/demo; codex -c disable_paste_burst=true resume",
+    }
+
+    assert effective_start_cmd(data) == "export CODEX_RUNTIME_DIR=/tmp/demo; codex -c disable_paste_burst=true"
+
+
+def test_effective_start_cmd_falls_back_to_base_when_codex_resume_is_unusable() -> None:
+    data = {
+        "start_cmd": "codex --model gpt-5.4",
+        "codex_start_cmd": "codex resume",
+    }
+
+    assert effective_start_cmd(data) == "codex --model gpt-5.4"
+
+
+def test_effective_start_cmd_rebuilds_resume_when_stored_resume_has_no_id() -> None:
+    data = {
+        "start_cmd": "export CODEX_RUNTIME_DIR=/tmp/demo; codex -c disable_paste_burst=true",
+        "codex_start_cmd": "codex resume",
+        "codex_session_id": "fresh-session",
+    }
+
+    assert effective_start_cmd(data) == (
+        "export CODEX_RUNTIME_DIR=/tmp/demo; "
+        "codex -c disable_paste_burst=true resume fresh-session"
+    )

@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/模型皆可控-CF1322?style=for-the-badge" alt="模型皆可控">
 </p>
 
-[![Version](https://img.shields.io/badge/version-6.1.2-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-6.1.3-orange.svg)]()
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg)]()
 
 [English](README.md) | **中文**
@@ -76,6 +76,7 @@
 
 - **Ask 在真实负载下保持快速**：provider 执行、mailbox refresh 和后台维护继续异步推进，submit receipt 仍保持有界。
 - **ccbd 生命周期稳定化**：stop-all、shutdown、restart 和后台 supervision 不再通过 stale maintenance 把 stopped runtime 或 terminal job 拉回去。
+- **Codex resume 恢复加固**：stale session path 和裸 `codex resume` 会被拒绝或剥离，pane recovery 不再围绕无效 resume authority 循环。
 - **Observer 命令明确弱化**：`pend`、`watch`、`queue`、`inbox` 都是非权威快照；终态判断请使用 `ccb ask wait <job_id>`。
 - **Linux/macOS/WSL 真实平台验证扩展**：发布验证加入真实 tmux ccbd/ask smoke、通讯矩阵、soak 和 fastpath stress。
 
@@ -291,6 +292,14 @@ ccb reinstall
 历史说明：下面较旧的发布记录里仍可能出现 `askd`、旧 flag 或已移除命令。这些内容仅作为 changelog 历史保留，不代表当前 CLI 入口。
 
 <details open>
+<summary><b>v6.1.3</b> - Codex Resume 恢复加固</summary>
+
+- **裸 Resume 命令安全化**：Codex pane recovery 不再重启没有 session id 的 `codex resume`；无效 resume 后缀会被剥离，或用有效绑定 session id 重建。
+- **Stale Session Path 拒绝恢复**：managed Codex restore 会在记录的 session log 缺失或越过 `CODEX_SESSION_ROOT` 时忽略 persisted resume id。
+
+</details>
+
+<details>
 <summary><b>v6.1.2</b> - Provider 存储边界加固</summary>
 
 - **存储分类显式化**：`ccb doctor storage` 现在区分 authority、session state、secret、workspace、user content、projected config、rebuildable cache 和 startup authority bundle。

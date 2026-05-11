@@ -389,6 +389,11 @@ Project namespace compatibility:
   - startup must also prove that the live pane process is running the bound `resume <codex_session_id>` conversation
   - for explicit managed Codex routes, the persisted bound-session authority
     must also match the current route authority before `resume` is allowed
+  - the recorded `codex_session_path`, when present, must still exist under the
+    recorded `codex_session_root`; stale or migrated paths are not resume
+    authority
+  - recovery must never relaunch a bare `codex resume` command without a
+    session id; it must strip the invalid resume suffix or start fresh instead
   - if that proof is unavailable or negative, startup must reject pane reuse and relaunch through the managed start command
 - agent-only legacy layouts with `cmd` disabled may reuse instance-scoped provider session evidence when that session file does not explicitly declare a conflicting tmux socket
 - that legacy reuse exception is narrow:

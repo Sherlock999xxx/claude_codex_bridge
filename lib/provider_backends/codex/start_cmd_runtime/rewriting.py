@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import shlex
 
-from .parsing import find_codex_token_index
+from .parsing import find_codex_token_index, resume_command_missing_session_id
 
 
 def build_resume_start_cmd(command: object, session_id: object) -> str:
     normalized_session_id = str(session_id or '').strip()
     if not normalized_session_id:
-        return str(command or '').strip()
+        return safe_non_resume_start_cmd(command)
     raw = str(command or '').strip()
     if not raw:
         return f'codex resume {shlex.quote(normalized_session_id)}'
@@ -19,6 +19,15 @@ def build_resume_start_cmd(command: object, session_id: object) -> str:
     if shell_prefix:
         return f'{shell_prefix}; {rebuilt_segment}'
     return rebuilt_segment
+
+
+def safe_non_resume_start_cmd(command: object) -> str:
+    raw = str(command or '').strip()
+    if not raw:
+        return ''
+    if not resume_command_missing_session_id(raw):
+        return raw
+    return strip_resume_start_cmd(raw)
 
 
 def strip_resume_start_cmd(command: object) -> str:
@@ -85,6 +94,7 @@ def rewrite_codex_segment(segment: str, session_id: str) -> str | None:
 __all__ = [
     'build_resume_start_cmd',
     'rewrite_codex_segment',
+    'safe_non_resume_start_cmd',
     'split_last_shell_segment',
     'strip_resume_from_codex_segment',
     'strip_resume_start_cmd',

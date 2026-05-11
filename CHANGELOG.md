@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## v6.1.3 (2026-05-11)
+
+### Codex Resume Recovery Hardening
+
+- **Bare Resume Commands Sanitized**: Codex pane recovery no longer relaunches `codex resume` without a session id; invalid resume suffixes are stripped or rebuilt with a valid bound session id
+- **Stale Session Paths Rejected**: managed Codex restore now ignores persisted resume ids when the recorded session log is missing or outside the recorded `CODEX_SESSION_ROOT`
+- **Recovery Tests Added**: regression coverage locks empty-resume command handling, Codex ensure-pane recovery, and stale session-path rejection
+
 ## v6.1.2 (2026-05-11)
 
 ### Provider Storage Boundary Hardening

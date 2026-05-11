@@ -245,6 +245,13 @@ Runtime pane reuse is a separate proof obligation from session-file binding:
 - if the live process identity is missing, unknown, or proves a different/non-resume Codex command without a committed managed in-pane switch, startup must reject that pane as reusable evidence and relaunch through the normal managed start command
 - the persisted `start_cmd` or `codex_start_cmd` is desired launch authority, not proof that the current pane process was launched with that command
 - relaunch after identity mismatch must preserve the agent-scoped `codex_home`, derived `codex_session_root`, and bound `codex_session_id` so ordinary `ccb` restores history while `ccb -n` remains the explicit fresh-start path
+- persisted resume authority must not produce a bare `codex resume` command:
+  if a resume command has no usable session id, recovery must strip `resume`
+  and relaunch the non-resume Codex base command instead of entering a crash
+  loop
+- when `codex_session_path` is recorded, it must still point to a file under
+  the recorded `codex_session_root` before startup may use
+  `codex_session_id` as resume authority
 - when the current explicit agent-local Codex provider authority differs from
   the provider authority recorded for the last managed session, startup must
   skip `resume` and start a fresh Codex conversation inside the same managed

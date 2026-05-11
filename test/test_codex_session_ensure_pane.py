@@ -131,6 +131,50 @@ def test_codex_ensure_pane_prefers_full_start_cmd_when_legacy_codex_resume_cmd_i
     assert calls == [("export CODEX_RUNTIME_DIR=/tmp/demo; codex -c disable_paste_burst=true resume deadbeef", str(tmp_path))]
 
 
+def test_codex_ensure_pane_strips_resume_when_session_id_is_missing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    session_path = tmp_path / ".codex-session"
+    session_path.write_text(
+        json.dumps(
+            {
+                "ccb_session_id": "test-session",
+                "terminal": "tmux",
+                "pane_id": "%1",
+                "pane_title_marker": "CCB-codex-test",
+                "runtime_dir": str(tmp_path),
+                "work_dir": str(tmp_path),
+                "active": True,
+                "codex_start_cmd": "export CODEX_RUNTIME_DIR=/tmp/demo; codex -c disable_paste_burst=true resume",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    calls: list[tuple[str, str | None]] = []
+    backend = FakeTmuxBackend()
+    backend.alive = {"%1": False}
+
+    def _respawn(pane_id: str, *, cmd: str, cwd: str | None = None,
+                 stderr_log_path: str | None = None, remain_on_exit: bool = True) -> None:
+        del stderr_log_path, remain_on_exit
+        calls.append((cmd, cwd))
+        backend.alive[pane_id] = True
+
+    backend.respawn_pane = _respawn  # type: ignore[method-assign]
+    monkeypatch.setattr(codex_session, "get_backend_for_session", lambda data: backend)
+    monkeypatch.setattr(codex_session, "find_project_session_file", lambda work_dir, instance=None: session_path)
+
+    sess = codex_session.load_project_session(tmp_path)
+    assert sess is not None
+
+    ok, pane = sess.ensure_pane()
+
+    assert ok is True
+    assert pane == "%1"
+    assert calls == [("export CODEX_RUNTIME_DIR=/tmp/demo; codex -c disable_paste_burst=true", str(tmp_path))]
+
+
 def test_codex_ensure_pane_already_alive(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """When pane is already alive, ensure_pane should return success immediately."""
     session_path = tmp_path / ".codex-session"

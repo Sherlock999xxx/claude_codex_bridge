@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/Every_Model_Controllable-CF1322?style=for-the-badge" alt="Every Model Controllable">
 </p>
 
-[![Version](https://img.shields.io/badge/version-6.1.2-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-6.1.3-orange.svg)]()
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg)]()
 
 **English** | [Chinese](README_zh.md)
@@ -76,6 +76,7 @@ Build project-local teams with roles, pane layout, provider state, worktree isol
 
 - **Ask stays fast under real load**: submit receipts stay bounded even while provider work, mailbox refresh, and background maintenance continue asynchronously.
 - **ccbd lifecycle stabilization**: stop-all, shutdown, restart, and background supervision no longer revive stopped runtimes or regress terminal jobs through stale maintenance work.
+- **Codex resume recovery hardened**: stale session paths and bare `codex resume` commands are rejected or sanitized so pane recovery does not loop on invalid resume authority.
 - **Observer commands are explicitly weak**: `pend`, `watch`, `queue`, and `inbox` render as non-authoritative snapshots; use `ccb ask wait <job_id>` for terminal truth.
 - **Linux/macOS/WSL real-platform validation expanded**: release validation now includes real tmux ccbd/ask smoke, communication matrix, soak, and fastpath stress coverage with stub providers.
 
@@ -293,6 +294,14 @@ Thanks to the [Linux.do community](https://linux.do) for testing, feedback, and 
 Historical note: older release notes below may mention `askd`, legacy flags, or removed commands. Those references are kept only as changelog history and do not redefine the current CLI surface.
 
 <details open>
+<summary><b>v6.1.3</b> - Codex Resume Recovery Hardening</summary>
+
+- **Bare Resume Commands Sanitized**: Codex pane recovery no longer relaunches `codex resume` without a session id; invalid resume suffixes are stripped or rebuilt with a valid bound session id.
+- **Stale Session Paths Rejected**: managed Codex restore ignores persisted resume ids when the recorded session log is missing or outside the recorded `CODEX_SESSION_ROOT`.
+
+</details>
+
+<details>
 <summary><b>v6.1.2</b> - Provider Storage Boundary Hardening</summary>
 
 - **Storage Classes Made Explicit**: `ccb doctor storage` now separates authority, session state, secrets, workspaces, user content, projected config, rebuildable cache, and startup authority bundles.
