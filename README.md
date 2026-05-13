@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/Every_Model_Controllable-CF1322?style=for-the-badge" alt="Every Model Controllable">
 </p>
 
-[![Version](https://img.shields.io/badge/version-6.1.9-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-6.1.10-orange.svg)]()
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg)]()
 
 **English** | [Chinese](README_zh.md)
@@ -74,9 +74,9 @@ Build project-local teams with roles, pane layout, provider state, worktree isol
 <details>
 <summary><b>Latest release highlights</b></summary>
 
-- **Provider storage is slimmer**: Codex, Claude, and Gemini now share or prune rebuildable provider assets instead of duplicating them across managed homes.
+- **Claude cleanup is safer**: `ccb cleanup` keeps the active Claude Code version plus one rollback version while pruning older rebuildable version-cache entries.
+- **Provider storage stays slimmer**: Codex, Claude, and Gemini share or prune rebuildable provider assets instead of duplicating them across managed homes.
 - **Project shutdown is stricter**: `ccb kill` waits for the old `ccbd` and keeper pids to really exit and avoids killing a newer backend generation.
-- **Claude tmux startup is steadier**: auto-permission Claude panes skip the bypass confirmation prompt that cannot be answered inside tmux.
 
 See [Release Notes](#release-notes) for the full history.
 
@@ -305,6 +305,14 @@ Thanks to the [Linux.do community](https://linux.do) for testing, feedback, and 
 Historical note: older release notes below may mention `askd`, legacy flags, or removed commands. Those references are kept only as changelog history and do not redefine the current CLI surface.
 
 <details open>
+<summary><b>v6.1.10</b> - Claude Cleanup Rollback Hotfix</summary>
+
+- Keeps the active Claude Code version plus one rollback version during `ccb cleanup`.
+- Restores the real-platform storage cleanup smoke expectation across macOS and WSL.
+
+</details>
+
+<details>
 <summary><b>v6.1.9</b> - Storage Dedup And Shutdown Hardening</summary>
 
 - Reduces `.ccb` growth by routing Codex projected assets through symlink/shared bundle paths and by moving/pruning rebuildable Claude and Gemini cache content.

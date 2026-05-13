@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## v6.1.10 (2026-05-13)
+
+### Claude Cleanup Rollback Hotfix
+
+- **Claude Rollback Cache Preserved**: `ccb cleanup` now keeps the active Claude Code version plus one rollback version while pruning older rebuildable version-cache entries
+- **Real Platform Cleanup Smoke Restored**: storage cleanup behavior now matches the macOS and WSL real-platform smoke expectations for Claude current/rollback preservation and Gemini cache pruning
+
 ## v6.1.9 (2026-05-13)
 
 ### Storage Dedup And Shutdown Hardening

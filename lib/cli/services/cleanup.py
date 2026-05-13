@@ -264,7 +264,7 @@ def _prune_claude_versions(
     actions: list[CleanupAction],
     skipped: list[CleanupSkipped],
 ) -> None:
-    keep = {path for path in version_paths if path.name in active_version_names}
+    keep = _claude_version_keep_paths(version_paths, active_version_names=active_version_names)
     for path in version_paths:
         if path in keep:
             continue
@@ -277,6 +277,16 @@ def _prune_claude_versions(
             actions=actions,
             skipped=skipped,
         )
+
+
+def _claude_version_keep_paths(version_paths: list[Path], *, active_version_names: set[str]) -> set[Path]:
+    keep = {path for path in version_paths if path.name in active_version_names}
+    if not active_version_names:
+        return keep
+    rollback = _newest_version_path(path for path in version_paths if path not in keep)
+    if rollback is not None:
+        keep.add(rollback)
+    return keep
 
 
 def _current_claude_version_name(home: Path) -> str | None:

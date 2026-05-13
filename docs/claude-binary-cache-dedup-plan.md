@@ -302,7 +302,7 @@ Implemented:
   launch boundary; managed launches keep `HOME` under
   `.ccb/agents/<agent>/provider-state/claude/home`.
 - `ccb cleanup` prunes old per-agent Claude version caches while keeping the
-  current symlink target.
+  current symlink target plus one rollback version.
 - `ccb cleanup` reports symlinked `versions/` directories instead of silently
   ignoring them.
 - Managed Claude startup preparation records a de-duplicated
@@ -318,9 +318,9 @@ Implemented:
   drift event.
 - `ccb cleanup` prunes the external Claude `versions/` cache, legacy
   `.ccb/shared-cache/claude/versions`, and legacy per-agent `versions/`
-  directories. A shared cache keeps only versions referenced by managed homes
-  that actually point at that cache; unreferenced legacy shared caches are
-  removed after external-cache migration.
+  directories. A shared cache keeps versions referenced by managed homes that
+  actually point at that cache plus one rollback version; unreferenced legacy
+  shared caches are removed after external-cache migration.
 - `ccb cleanup` removes rebuildable Claude cache residue from managed homes:
   `.cache/claude`, `.npm/_logs`, `.claude/cache`, `.claude/telemetry`,
   `.claude/paste-cache`, and `.claude/plugins/marketplaces`.

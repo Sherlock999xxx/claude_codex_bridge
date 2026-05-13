@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/模型皆可控-CF1322?style=for-the-badge" alt="模型皆可控">
 </p>
 
-[![Version](https://img.shields.io/badge/version-6.1.9-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-6.1.10-orange.svg)]()
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg)]()
 
 [English](README.md) | **中文**
@@ -74,9 +74,9 @@
 <details>
 <summary><b>最新版本亮点</b></summary>
 
-- **Provider 存储更轻**：Codex、Claude、Gemini 会共享或清理可重建资产，不再在每个 managed home 里重复堆积。
+- **Claude cleanup 更安全**：`ccb cleanup` 会保留当前 Claude Code 版本和一个 rollback 版本，只清理更旧的可重建版本缓存。
+- **Provider 存储继续瘦身**：Codex、Claude、Gemini 会共享或清理可重建资产，不再在每个 managed home 里重复堆积。
 - **项目关闭更彻底**：`ccb kill` 会等待旧 `ccbd` 和 keeper pid 真正退出，并避免误杀新的 backend generation。
-- **Claude tmux 启动更稳定**：auto-permission Claude pane 会跳过 tmux 中无法确认的 bypass prompt。
 
 完整历史见 [新版本记录](#新版本记录)。
 
@@ -296,6 +296,14 @@ ccb reinstall
 历史说明：下面较旧的发布记录里仍可能出现 `askd`、旧 flag 或已移除命令。这些内容仅作为 changelog 历史保留，不代表当前 CLI 入口。
 
 <details open>
+<summary><b>v6.1.10</b> - Claude Cleanup Rollback Hotfix</summary>
+
+- `ccb cleanup` 现在会保留当前 Claude Code 版本和一个 rollback 版本。
+- 修复 macOS/WSL real-platform storage cleanup smoke 中的 Claude current/rollback 保留预期。
+
+</details>
+
+<details>
 <summary><b>v6.1.9</b> - 存储去重与关闭加固</summary>
 
 - 通过 Codex 投影资产 symlink/shared bundle，以及 Claude/Gemini 可重建 cache 路由和清理，减少 `.ccb` 体积增长。

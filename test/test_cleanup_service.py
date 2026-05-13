@@ -54,9 +54,9 @@ def test_cleanup_prunes_old_claude_versions_and_gemini_caches(tmp_path: Path, mo
     summary = cleanup_project_storage(_context(project_root), SimpleNamespace())
 
     assert summary.status == 'ok'
-    assert summary.deleted_count == 4
+    assert summary.deleted_count == 3
     assert not (versions / '2.1.132').exists()
-    assert not (versions / '2.1.133').exists()
+    assert (versions / '2.1.133').exists()
     assert (versions / '2.1.137').exists()
     assert not (gemini_home / '.npm' / '_cacache').exists()
     assert not (gemini_home / '.cache' / 'node-gyp').exists()
@@ -151,10 +151,10 @@ def test_cleanup_prunes_shared_claude_versions_referenced_by_symlinked_agent_hom
 
     summary = cleanup_project_storage(_context(project_root), SimpleNamespace())
 
-    assert summary.deleted_count == 2
+    assert summary.deleted_count == 1
     assert summary.skipped_count == 1
     assert not (shared_versions / '2.1.137').exists()
-    assert not (shared_versions / '2.1.138').exists()
+    assert (shared_versions / '2.1.138').exists()
     assert (shared_versions / '2.1.139').exists()
     assert summary.actions[0].reason == 'old_shared_claude_version_cache'
 
@@ -168,7 +168,8 @@ def test_cleanup_prunes_external_claude_versions_referenced_by_agent_home(
     monkeypatch.setenv('XDG_CACHE_HOME', str(xdg_cache))
     layout = PathLayout(project_root)
     external_versions = layout.provider_external_cache_dir('claude') / 'versions'
-    _write(external_versions / '2.1.137', 'old')
+    _write(external_versions / '2.1.136', 'old')
+    _write(external_versions / '2.1.137', 'rollback')
     _write(external_versions / '2.1.139', 'current')
     claude_home = layout.agent_provider_state_dir('agent1', 'claude') / 'home'
     versions = claude_home / '.local' / 'share' / 'claude' / 'versions'
@@ -182,7 +183,8 @@ def test_cleanup_prunes_external_claude_versions_referenced_by_agent_home(
 
     assert summary.deleted_count == 1
     assert summary.skipped_count == 1
-    assert not (external_versions / '2.1.137').exists()
+    assert not (external_versions / '2.1.136').exists()
+    assert (external_versions / '2.1.137').exists()
     assert (external_versions / '2.1.139').exists()
     assert summary.actions[0].reason == 'old_shared_claude_version_cache'
 

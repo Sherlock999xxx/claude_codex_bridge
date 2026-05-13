@@ -867,7 +867,7 @@ Implemented:
   - real cleanup validation on the soak project passed after injecting Claude
     and Gemini cache residue: no pending jobs remained, `ccb cleanup` removed
     old Claude version cache plus Gemini npm/node-gyp caches while preserving
-    Claude current versions and Gemini `.gemini/tmp` session state
+    Claude current/rollback versions and Gemini `.gemini/tmp` session state
 - During Linux cleanup validation, an accepted reply-delivery residue was found
   from shutdown-time after-complete scheduling. The shutdown contract now
   suspends automatic reply-delivery creation once project stop is requested, so
