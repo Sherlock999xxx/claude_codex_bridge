@@ -101,6 +101,14 @@ Default managed Claude launches should still use an agent-scoped private
 `HOME`, but the Claude executable/version cache should resolve outside that
 private home.
 
+When the source user home has an active Claude Code binary under
+`~/.local/bin/claude` pointing into `~/.local/share/claude/versions/`, CCB should
+treat that active source-home version as the preferred managed Claude binary
+version. Managed startup may copy that version into the CCB provider cache, but
+the managed `.local/bin/claude` link should follow the source-home active
+version instead of selecting a different version only because it is already
+present or numerically newer in the shared cache.
+
 Preferred target:
 
 ```text

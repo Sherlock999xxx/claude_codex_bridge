@@ -1077,6 +1077,39 @@ def test_route_claude_binary_cache_points_existing_shared_home_to_latest_version
     assert (home / '.local' / 'bin' / 'claude').resolve() == new_binary.resolve()
 
 
+def test_route_claude_binary_cache_prefers_source_home_active_version(tmp_path: Path) -> None:
+    home = tmp_path / 'home'
+    source_home = tmp_path / 'source-home'
+    shared_cache = tmp_path / 'shared-cache' / 'claude'
+    shared_versions = shared_cache / 'versions'
+    old_shared = shared_versions / '2.1.139'
+    newer_shared = shared_versions / '2.1.140'
+    source_active = source_home / '.local' / 'share' / 'claude' / 'versions' / '2.1.138'
+    old_shared.parent.mkdir(parents=True, exist_ok=True)
+    old_shared.write_text('old shared executable\n', encoding='utf-8')
+    newer_shared.write_text('newer shared executable\n', encoding='utf-8')
+    source_active.parent.mkdir(parents=True, exist_ok=True)
+    source_active.write_text('source active executable\n', encoding='utf-8')
+    source_active.chmod(0o755)
+    (source_home / '.local' / 'bin').mkdir(parents=True, exist_ok=True)
+    (source_home / '.local' / 'bin' / 'claude').symlink_to(source_active)
+    versions = home / '.local' / 'share' / 'claude' / 'versions'
+    versions.parent.mkdir(parents=True, exist_ok=True)
+    versions.symlink_to(shared_versions, target_is_directory=True)
+    (home / '.local' / 'bin').mkdir(parents=True, exist_ok=True)
+    (home / '.local' / 'bin' / 'claude').symlink_to(newer_shared)
+
+    result = route_claude_binary_cache(home, shared_cache, source_home=source_home)
+
+    copied_active = shared_versions / '2.1.138'
+    assert result['status'] == 'ok'
+    assert result['reason'] == 'already_shared'
+    assert result['active_version_name'] == '2.1.138'
+    assert copied_active.read_text(encoding='utf-8') == 'source active executable\n'
+    assert copied_active.stat().st_mode & 0o111
+    assert (home / '.local' / 'bin' / 'claude').resolve() == copied_active.resolve()
+
+
 def test_materialize_claude_home_config_projects_system_settings_into_managed_home(tmp_path: Path) -> None:
     source_home = tmp_path / 'system-home'
     target_home = tmp_path / 'managed-home'

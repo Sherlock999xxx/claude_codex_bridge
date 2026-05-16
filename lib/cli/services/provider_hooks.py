@@ -263,7 +263,7 @@ def _route_claude_binary_cache_if_possible(*, layout, home_root: Path) -> None:
         cache_root = layout.ensure_provider_external_cache_dir('claude')
     except Exception:
         return
-    route_claude_binary_cache(home_root, cache_root)
+    route_claude_binary_cache(home_root, cache_root, source_home=current_provider_source_home())
 
 
 def _claude_versions_cache_signature(versions_dir: Path) -> dict[str, object] | None:

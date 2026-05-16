@@ -9,10 +9,17 @@ _PROJECTION_LABEL = 'claude-binary-versions'
 _IGNORED_VERSION_ENTRIES = {'.DS_Store'}
 
 
-def route_claude_binary_cache(home_root: Path, shared_cache_root: Path) -> dict[str, object]:
+def route_claude_binary_cache(
+    home_root: Path,
+    shared_cache_root: Path,
+    *,
+    source_home: Path | None = None,
+) -> dict[str, object]:
     home = Path(home_root).expanduser().resolve(strict=False)
     shared_versions_dir = Path(shared_cache_root).expanduser().resolve(strict=False) / 'versions'
     versions_dir = home / '.local' / 'share' / 'claude' / 'versions'
+    source_active_version = _source_active_version(source_home, managed_home=home)
+    source_active_version_name = source_active_version.name if source_active_version is not None else ''
 
     try:
         shared_versions_dir.mkdir(parents=True, exist_ok=True)
@@ -27,7 +34,18 @@ def route_claude_binary_cache(home_root: Path, shared_cache_root: Path) -> dict[
 
     if versions_dir.is_symlink():
         if _same_path(versions_dir, shared_versions_dir):
-            active_version_name = _ensure_latest_claude_link(home, shared_versions_dir)
+            failure = _copy_source_active_version_to_shared(
+                source_active_version,
+                shared_versions_dir=shared_versions_dir,
+                versions_dir=versions_dir,
+            )
+            if failure is not None:
+                return failure
+            active_version_name = _ensure_claude_link(
+                home,
+                shared_versions_dir,
+                preferred_version_name=source_active_version_name,
+            )
             write_projected_marker(
                 versions_dir,
                 label=_PROJECTION_LABEL,
@@ -77,14 +95,25 @@ def route_claude_binary_cache(home_root: Path, shared_cache_root: Path) -> dict[
         )
         if failure is not None:
             return failure
+        failure = _copy_source_active_version_to_shared(
+            source_active_version,
+            shared_versions_dir=shared_versions_dir,
+            versions_dir=versions_dir,
+        )
+        if failure is not None:
+            return failure
         linked = _link_versions_dir(
             versions_dir,
             shared_versions_dir,
             reason='migrated_symlink' if scan['version_paths'] else 'linked_empty',
-            version_names=scan['version_names'],
+            version_names=_version_names(shared_versions_dir),
         )
         if linked.get('status') == 'ok':
-            linked['active_version_name'] = _ensure_latest_claude_link(home, shared_versions_dir) or ''
+            linked['active_version_name'] = _ensure_claude_link(
+                home,
+                shared_versions_dir,
+                preferred_version_name=source_active_version_name,
+            ) or ''
         if scan['ignored_entries'] and linked.get('status') == 'ok':
             linked['warnings'] = tuple(scan['ignored_entries'])
         return linked
@@ -98,11 +127,26 @@ def route_claude_binary_cache(home_root: Path, shared_cache_root: Path) -> dict[
         )
 
     if not versions_dir.exists():
-        return _link_versions_dir(
+        failure = _copy_source_active_version_to_shared(
+            source_active_version,
+            shared_versions_dir=shared_versions_dir,
+            versions_dir=versions_dir,
+        )
+        if failure is not None:
+            return failure
+        linked = _link_versions_dir(
             versions_dir,
             shared_versions_dir,
             reason='linked_empty',
+            version_names=_version_names(shared_versions_dir),
         )
+        if linked.get('status') == 'ok':
+            linked['active_version_name'] = _ensure_claude_link(
+                home,
+                shared_versions_dir,
+                preferred_version_name=source_active_version_name,
+            ) or ''
+        return linked
 
     scan = _scan_versions_dir(versions_dir)
     if scan['unknown_entries']:
@@ -123,15 +167,26 @@ def route_claude_binary_cache(home_root: Path, shared_cache_root: Path) -> dict[
     )
     if failure is not None:
         return failure
+    failure = _copy_source_active_version_to_shared(
+        source_active_version,
+        shared_versions_dir=shared_versions_dir,
+        versions_dir=versions_dir,
+    )
+    if failure is not None:
+        return failure
 
     linked = _link_versions_dir(
         versions_dir,
         shared_versions_dir,
         reason='migrated' if scan['version_paths'] else 'linked_empty',
-        version_names=scan['version_names'],
+        version_names=_version_names(shared_versions_dir),
     )
     if linked.get('status') == 'ok':
-        linked['active_version_name'] = _ensure_latest_claude_link(home, shared_versions_dir) or ''
+        linked['active_version_name'] = _ensure_claude_link(
+            home,
+            shared_versions_dir,
+            preferred_version_name=source_active_version_name,
+        ) or ''
     if scan['ignored_entries'] and linked.get('status') == 'ok':
         linked['warnings'] = tuple(scan['ignored_entries'])
     return linked
@@ -169,6 +224,22 @@ def _copy_versions_to_shared(
                 )
         write_projected_marker(destination, label='claude-binary-version', mode='copy', source=version_path)
     return None
+
+
+def _copy_source_active_version_to_shared(
+    source_active_version: Path | None,
+    *,
+    shared_versions_dir: Path,
+    versions_dir: Path,
+) -> dict[str, object] | None:
+    if source_active_version is None:
+        return None
+    return _copy_versions_to_shared(
+        version_paths=(source_active_version,),
+        shared_versions_dir=shared_versions_dir,
+        versions_dir=versions_dir,
+        version_names=(source_active_version.name,),
+    )
 
 
 def _scan_versions_dir(versions_dir: Path) -> dict[str, object]:
@@ -237,17 +308,17 @@ def _link_versions_dir(
     )
 
 
-def _ensure_latest_claude_link(home: Path, shared_versions_dir: Path) -> str:
-    latest = _newest_version_path(shared_versions_dir)
-    if latest is None:
+def _ensure_claude_link(home: Path, shared_versions_dir: Path, *, preferred_version_name: str = '') -> str:
+    target_version = _preferred_or_newest_version_path(shared_versions_dir, preferred_version_name=preferred_version_name)
+    if target_version is None:
         return ''
-    executable = _version_executable_path(latest)
+    executable = _version_executable_path(target_version)
     if executable is None:
         return ''
     link = home / '.local' / 'bin' / 'claude'
     try:
         if link.is_symlink() and _same_path(link, executable):
-            return latest.name
+            return target_version.name
         if link.exists() and not link.is_symlink():
             return ''
         link.parent.mkdir(parents=True, exist_ok=True)
@@ -255,7 +326,16 @@ def _ensure_latest_claude_link(home: Path, shared_versions_dir: Path) -> str:
         link.symlink_to(executable)
     except Exception:
         return ''
-    return latest.name
+    return target_version.name
+
+
+def _preferred_or_newest_version_path(versions_dir: Path, *, preferred_version_name: str) -> Path | None:
+    preferred = str(preferred_version_name or '').strip()
+    if preferred:
+        candidate = versions_dir / preferred
+        if _looks_like_claude_version_name(candidate.name) and _version_executable_path(candidate) is not None:
+            return candidate
+    return _newest_version_path(versions_dir)
 
 
 def _newest_version_path(versions_dir: Path) -> Path | None:
@@ -298,6 +378,33 @@ def _version_names(versions_dir: Path) -> tuple[str, ...]:
         )
     except Exception:
         return ()
+
+
+def _source_active_version(source_home: Path | None, *, managed_home: Path) -> Path | None:
+    if source_home is None:
+        return None
+    try:
+        home = Path(source_home).expanduser().resolve(strict=False)
+    except Exception:
+        return None
+    if _same_path(home, managed_home):
+        return None
+    link = home / '.local' / 'bin' / 'claude'
+    if not link.is_symlink():
+        return None
+    try:
+        target = link.resolve(strict=True)
+        versions_dir = (home / '.local' / 'share' / 'claude' / 'versions').resolve(strict=True)
+        relative = target.relative_to(versions_dir)
+    except Exception:
+        return None
+    if not relative.parts:
+        return None
+    version_name = relative.parts[0]
+    if not _looks_like_claude_version_name(version_name):
+        return None
+    candidate = versions_dir / version_name
+    return candidate if _version_executable_path(candidate) is not None else None
 
 
 def _same_path(left: Path, right: Path) -> bool:
