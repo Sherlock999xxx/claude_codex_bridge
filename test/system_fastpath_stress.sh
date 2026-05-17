@@ -228,12 +228,8 @@ submit_one() {
   local target="$2"
   local sender="$3"
   local started ended elapsed out job_id
-  local ask_args=()
-  if [ "${sender}" != "user" ]; then
-    ask_args+=(--silence)
-  fi
   started="$(now_ms)"
-  out="$(ccb_project ask "${ask_args[@]}" "${target}" from "${sender}" "fastpath-${index}-${target}")" || {
+  out="$(ccb_project ask "${target}" from "${sender}" "fastpath-${index}-${target}")" || {
     printf '%s\n' "${out}" >"${PROJECT}/ask-${index}.err"
     fail "submit ${index} ${target}"
     return
@@ -320,15 +316,15 @@ wait_sample_jobs() {
     job="$(awk '{print $1}' <<<"${line}")"
     target="$(awk '{print $2}' <<<"${line}")"
     [ -z "${job}" ] && continue
-    out="$(ccb_project pend --watch "${job}")" || {
-      fail "pend watch ${target} ${job}"
+    out="$(ccb_project ask wait "${job}")" || {
+      fail "ask wait ${target} ${job}"
       continue
     }
     printf '%s\n' "${out}" >"${PROJECT}/wait-${job}.out"
     if has_match "${out}" '^watch_status: terminal$' && has_match "${out}" '^status: completed$'; then
-      ok "pend watch ${target} ${job}"
+      ok "ask wait ${target} ${job}"
     else
-      fail "pend watch ${target} ${job}"
+      fail "ask wait ${target} ${job}"
     fi
   done
 }

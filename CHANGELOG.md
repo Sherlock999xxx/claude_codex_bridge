@@ -2,13 +2,6 @@
 
 ## Unreleased
 
-## v6.2.1 (2026-05-17)
-
-### Callback Ask Chain Validation Hotfix
-
-- **Real-Platform Smoke Updated**: release smoke scripts now use `ccb pend --watch <job_id>` instead of the removed `ccb ask wait <job_id>` compatibility path.
-- **Nested Ask Stress Aligned**: fastpath stress asks from active agents now use `--silence` for independent no-result-needed work, matching the 6.2 nested ask routing contract.
-
 ## v6.2.0 (2026-05-17)
 
 ### Callback Ask Chain Release
