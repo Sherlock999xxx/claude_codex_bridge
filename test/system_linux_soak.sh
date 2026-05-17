@@ -232,15 +232,15 @@ submit_and_wait_one() {
     fail "submit ${iteration} ${target} receipt ${elapsed}ms > ${MAX_RECEIPT_MS}ms"
   fi
 
-  wait_out="$(ccb_project ask wait "${job_id}")" || {
-    fail "ask wait ${iteration} ${target} ${job_id}"
+  wait_out="$(ccb_project pend --watch "${job_id}")" || {
+    fail "pend watch ${iteration} ${target} ${job_id}"
     return
   }
   printf '%s\n' "${wait_out}" >"${PROJECT}/wait-${iteration}-${job_id}.out"
   if has_match "${wait_out}" '^watch_status: terminal$' && has_match "${wait_out}" '^status: completed$'; then
-    ok "ask wait ${iteration} ${target}"
+    ok "pend watch ${iteration} ${target}"
   else
-    fail "ask wait ${iteration} ${target}"
+    fail "pend watch ${iteration} ${target}"
   fi
 
   pend_out="$(ccb_project pend "${target}")" || {
