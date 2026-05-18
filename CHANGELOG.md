@@ -54,7 +54,7 @@
 - **Managed Ask Skills Project Across Providers**: Claude inherited `skills/` and `commands/` now use CCB projected assets instead of copy-sync, so managed agents inherit system-installed ask skills without duplicating user provider homes.
 - **Droid Managed FACTORY_HOME Added**: Droid now gets a managed provider home with system `~/.factory/skills` projected into each managed Droid home, plus session-scoped Droid sessions rooted under that managed home.
 - **Droid Session Readers Follow Managed Sessions**: Droid launch/session payloads, execution polling, and communicator state now use the session-scoped Droid sessions root so restart and session rotation stay bound to the managed session log.
-- **Ask Replies Are Guided By Default**: `ccb ask` now injects concise reply guidance, adds `--compact` for distilled answers and `--silence` for silent-on-success asks, while legacy wait/output flags are ignored for compatibility.
+- **Ask Replies Are Guided By Default**: `ccb ask` now injects concise reply guidance, adds `--compact` for distilled answers and `--silence` for silent-on-success asks.
 
 ## v6.1.18 (2026-05-15)
 

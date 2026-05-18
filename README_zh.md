@@ -384,7 +384,7 @@ ccb reinstall
 - Claude 继承的 `skills/` 和 `commands/` 改为通过 CCB projected assets 路由，不再 copy-sync，让系统 ask skill 可进入 managed Claude home。
 - Droid 增加 managed `FACTORY_HOME`，会投射系统 `~/.factory/skills`，并使用 session-scoped Droid sessions root。
 - Droid launch、execution polling 和 communicator session reader 现在会在重启或 session rotation 后继续跟随 managed session root。
-- `ccb ask` 默认注入简洁回复指导，并新增 `--compact` / `--silence` 提交模式；旧 wait/output flags 作为兼容输入被忽略。
+- `ccb ask` 默认注入简洁回复指导，并新增 `--compact` / `--silence` 提交模式。
 
 </details>
 

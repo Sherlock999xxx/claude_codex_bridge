@@ -393,7 +393,7 @@ Historical note: older release notes below may mention `askd`, legacy flags, or 
 - Routes inherited Claude `skills/` and `commands/` through CCB projected assets instead of copy-sync, so system-installed ask skills reach managed Claude agents without duplicating provider homes.
 - Adds managed Droid `FACTORY_HOME` support with projected system `~/.factory/skills` and a session-scoped Droid sessions root.
 - Updates Droid launch, execution polling, and communicator session readers to follow the managed session root after restart or session rotation.
-- Adds concise default ask reply guidance plus `--compact` and `--silence` submission modes, while keeping legacy wait/output flags as ignored compatibility inputs.
+- Adds concise default ask reply guidance plus `--compact` and `--silence` submission modes.
 
 </details>
 

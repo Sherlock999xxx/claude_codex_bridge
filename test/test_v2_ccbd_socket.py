@@ -493,7 +493,7 @@ def test_ccbd_stop_all_force_terminalizes_running_jobs_before_restart_restore(tm
     job_id = receipt['job_id']
     running = _wait_for_job_status(client, job_id, 'running')
     assert running['status'] == 'running'
-    assert app.paths.execution_state_path(job_id).exists()
+    _wait_for(app.paths.execution_state_path(job_id))
 
     stopped = client.stop_all(force=True)
     assert stopped['state'] == 'unmounted'
