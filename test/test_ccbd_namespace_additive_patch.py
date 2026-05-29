@@ -296,13 +296,132 @@ def test_apply_add_window_fails_when_preserved_agent_pane_changes(tmp_path: Path
     assert result.diagnostics['lease_or_lifecycle_written'] is False
 
 
-def test_apply_additive_patch_blocks_append_add_agent_first_step(tmp_path: Path) -> None:
+def test_apply_append_add_agent_creates_only_new_agent_pane(tmp_path: Path, monkeypatch) -> None:
     current = _load_config(tmp_path / 'current-add-agent', BASE_CONFIG)
     new = _load_config(
         tmp_path / 'new-add-agent',
-        BASE_CONFIG.replace('agent1:codex, agent2:claude', 'agent1:codex, agent2:claude, agent3:codex'),
+        BASE_CONFIG.replace('agent1:codex, agent2:claude', 'agent1:codex, (agent2:claude; agent3:codex)'),
     )
     layout = PathLayout(_project(tmp_path / 'repo-add-agent', BASE_CONFIG))
+    backend = _PatchFakeBackend(socket_path=str(layout.ccbd_tmux_socket_path))
+    backend.add_window(layout.ccbd_tmux_session_name, 'main')
+    backend.sessions[layout.ccbd_tmux_session_name][0]['panes'].append('%2')
+    backend.pane_counter = 2
+    _seed_agent_pane(backend, '%1', project_id='proj-1', window='main', agent='agent1')
+    _seed_agent_pane(backend, '%2', project_id='proj-1', window='main', agent='agent2')
+    _store_namespace(layout, project_id='proj-1')
+    controller = ProjectNamespaceController(layout, 'proj-1', backend_factory=lambda socket_path=None: backend)
+    _forbid_recreate_paths(monkeypatch)
+    plan = build_reload_dry_run_plan(current, new, project_id='proj-1', current_namespace=controller.load())
+
+    result = controller.apply_additive_patch(
+        patch_plan=plan['namespace_patch_plan'],
+        old_topology=build_namespace_topology_plan(current),
+        new_topology=build_namespace_topology_plan(new),
+        timeout_s=0.0,
+    )
+
+    assert result.status == 'applied'
+    assert result.created_windows == ()
+    assert result.created_panes == ('%3',)
+    assert result.agent_panes == {'agent3': '%3'}
+    assert result.sidebar_panes == {}
+    assert result.preserved_before == {'agent1': '%1', 'agent2': '%2'}
+    assert result.preserved_after == {'agent1': '%1', 'agent2': '%2'}
+    assert backend.split_calls == [('%2', 'right', 50)]
+    assert backend.pane_options['%3']['@ccb_project_id'] == 'proj-1'
+    assert backend.pane_options['%3']['@ccb_role'] == 'agent'
+    assert backend.pane_options['%3']['@ccb_slot'] == 'agent3'
+    assert backend.pane_options['%3']['@ccb_window'] == 'main'
+    assert backend.pane_options['%3']['@ccb_namespace_epoch'] == '3'
+    assert backend.pane_options['%3']['@ccb_managed_by'] == 'ccbd'
+    assert result.diagnostics['graph_published'] is False
+    assert result.diagnostics['runtime_authority_written'] is False
+    assert result.diagnostics['lease_or_lifecycle_written'] is False
+
+
+def test_apply_append_add_agent_failure_does_not_publish_or_write_authority(tmp_path: Path, monkeypatch) -> None:
+    current = _load_config(tmp_path / 'current-add-agent-fail', BASE_CONFIG)
+    new = _load_config(
+        tmp_path / 'new-add-agent-fail',
+        BASE_CONFIG.replace('agent1:codex, agent2:claude', 'agent1:codex, (agent2:claude; agent3:codex)'),
+    )
+    layout = PathLayout(_project(tmp_path / 'repo-add-agent-fail', BASE_CONFIG))
+
+    class _FailingBackend(_PatchFakeBackend):
+        def split_pane(self, parent_pane_id: str, direction: str, percent: int, cmd=None, cwd=None) -> str:
+            raise RuntimeError('append split failed')
+
+    backend = _FailingBackend(socket_path=str(layout.ccbd_tmux_socket_path))
+    backend.add_window(layout.ccbd_tmux_session_name, 'main')
+    backend.sessions[layout.ccbd_tmux_session_name][0]['panes'].append('%2')
+    backend.pane_counter = 2
+    _seed_agent_pane(backend, '%1', project_id='proj-1', window='main', agent='agent1')
+    _seed_agent_pane(backend, '%2', project_id='proj-1', window='main', agent='agent2')
+    _store_namespace(layout, project_id='proj-1')
+    controller = ProjectNamespaceController(layout, 'proj-1', backend_factory=lambda socket_path=None: backend)
+    _forbid_recreate_paths(monkeypatch)
+    plan = build_reload_dry_run_plan(current, new, project_id='proj-1', current_namespace=controller.load())
+
+    result = controller.apply_additive_patch(
+        patch_plan=plan['namespace_patch_plan'],
+        old_topology=build_namespace_topology_plan(current),
+        new_topology=build_namespace_topology_plan(new),
+        timeout_s=0.0,
+    )
+
+    assert result.status == 'failed'
+    assert result.partial is False
+    assert result.diagnostics['reason'] == 'namespace_patch_failed'
+    assert result.diagnostics['graph_published'] is False
+    assert result.diagnostics['runtime_authority_written'] is False
+    assert result.diagnostics['lease_or_lifecycle_written'] is False
+
+
+@pytest.mark.parametrize(
+    ('new_config', 'expected_reason'),
+    [
+        (
+            BASE_CONFIG.replace('agent1:codex, agent2:claude', 'agent1:codex, agent3:codex, agent2:claude'),
+            'patch_plan_not_planned',
+        ),
+        (
+            BASE_CONFIG.replace('agent1:codex, agent2:claude', 'agent1:codex, agent2:claude, agent3:codex'),
+            'patch_plan_not_planned',
+        ),
+        (
+            BASE_CONFIG.replace('agent1:codex, agent2:claude', 'agent1:codex; agent2:claude, agent3:codex'),
+            'patch_plan_not_planned',
+        ),
+        (
+            BASE_CONFIG.replace('agent1:codex, agent2:claude', 'agent2:claude, agent1:codex, agent3:codex'),
+            'patch_plan_not_planned',
+        ),
+        (
+            """version = 2
+entry_window = "main"
+
+[windows]
+main = "agent1:codex, agent3:codex"
+review = "agent2:claude"
+
+[ui.sidebar]
+mode = "every_window"
+width = "15%"
+bottom_height = 20
+""",
+            'patch_plan_not_planned',
+        ),
+    ],
+)
+def test_apply_add_agent_blocks_insert_reorder_move_and_non_last_layouts(
+    tmp_path: Path,
+    new_config: str,
+    expected_reason: str,
+) -> None:
+    current = _load_config(tmp_path / 'current-non-append', BASE_CONFIG)
+    new = _load_config(tmp_path / 'new-non-append', new_config)
+    layout = PathLayout(_project(tmp_path / 'repo-non-append', BASE_CONFIG))
     backend = _PatchFakeBackend(socket_path=str(layout.ccbd_tmux_socket_path))
     backend.add_window(layout.ccbd_tmux_session_name, 'main')
     _store_namespace(layout, project_id='proj-1')
@@ -317,7 +436,7 @@ def test_apply_additive_patch_blocks_append_add_agent_first_step(tmp_path: Path)
     )
 
     assert result.status == 'blocked'
-    assert result.diagnostics['reason'] == 'add_agent_not_implemented'
+    assert result.diagnostics['reason'] == expected_reason
     assert backend.split_calls == []
 
 

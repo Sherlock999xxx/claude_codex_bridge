@@ -34,7 +34,7 @@ def test_namespace_patch_plan_add_agent_append_preserves_existing_agents(tmp_pat
     current = _load_config(tmp_path / 'current', BASE_CONFIG)
     new = _load_config(
         tmp_path / 'new',
-        BASE_CONFIG.replace('agent1:codex, agent2:claude', 'agent1:codex, agent2:claude, agent3:codex'),
+        BASE_CONFIG.replace('agent1:codex, agent2:claude', 'agent1:codex, (agent2:claude; agent3:codex)'),
     )
     plan = build_reload_dry_run_plan(
         current,
@@ -64,6 +64,37 @@ def test_namespace_patch_plan_add_agent_append_preserves_existing_agents(tmp_pat
             'reason': 'new agent appended to existing managed window',
         }
     ]
+
+
+@pytest.mark.parametrize(
+    'layout',
+    [
+        'agent1:codex, agent2:claude, agent3:codex',
+        'agent1:codex; agent2:claude, agent3:codex',
+        'agent1:codex, (agent2:claude, agent3:codex)',
+    ],
+)
+def test_namespace_patch_plan_blocks_add_agent_layouts_that_do_not_expand_last_pane(
+    tmp_path: Path,
+    layout: str,
+) -> None:
+    current = _load_config(tmp_path / 'current-add-agent-layout', BASE_CONFIG)
+    new = _load_config(
+        tmp_path / 'new-add-agent-layout',
+        BASE_CONFIG.replace('agent1:codex, agent2:claude', layout),
+    )
+
+    plan = build_reload_dry_run_plan(
+        current,
+        new,
+        project_id='proj-1',
+        current_namespace=_namespace('proj-1'),
+    )
+
+    assert plan['plan_class'] == 'add_agent'
+    assert plan['namespace_patch_plan']['status'] == 'blocked'
+    assert {'add_agent'} == {item['op'] for item in plan['namespace_patch_plan']['blocked_operations']}
+    assert plan['namespace_patch_plan']['steps'] == []
 
 
 def test_namespace_patch_plan_add_window_creates_window_sidebar_and_agent_panes(tmp_path: Path) -> None:
@@ -192,7 +223,7 @@ def test_namespace_patch_plan_blocks_additive_when_namespace_scope_unverified(tm
     current = _load_config(tmp_path / 'current-no-scope', BASE_CONFIG)
     new = _load_config(
         tmp_path / 'new-no-scope',
-        BASE_CONFIG.replace('agent1:codex, agent2:claude', 'agent1:codex, agent2:claude, agent3:codex'),
+        BASE_CONFIG.replace('agent1:codex, agent2:claude', 'agent1:codex, (agent2:claude; agent3:codex)'),
     )
 
     plan = build_reload_dry_run_plan(current, new, project_id='proj-1', current_namespace=None)
@@ -206,7 +237,7 @@ def test_namespace_patch_plan_requires_namespace_epoch_for_additive_plan(tmp_pat
     current = _load_config(tmp_path / 'current-no-epoch', BASE_CONFIG)
     new = _load_config(
         tmp_path / 'new-no-epoch',
-        BASE_CONFIG.replace('agent1:codex, agent2:claude', 'agent1:codex, agent2:claude, agent3:codex'),
+        BASE_CONFIG.replace('agent1:codex, agent2:claude', 'agent1:codex, (agent2:claude; agent3:codex)'),
     )
     namespace = _namespace('proj-1')
     namespace.namespace_epoch = None
@@ -224,7 +255,7 @@ def test_namespace_patch_planner_does_not_touch_old_runtime_or_tmux(tmp_path: Pa
     current = _load_config(tmp_path / 'current-app', BASE_CONFIG)
     new = _load_config(
         tmp_path / 'new-app',
-        BASE_CONFIG.replace('agent1:codex, agent2:claude', 'agent1:codex, agent2:claude, agent3:codex'),
+        BASE_CONFIG.replace('agent1:codex, agent2:claude', 'agent1:codex, (agent2:claude; agent3:codex)'),
     )
     before_snapshot = _runtime_file_snapshot(project_root)
     before_graph = app.service_graph

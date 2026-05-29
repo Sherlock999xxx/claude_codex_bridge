@@ -49,24 +49,26 @@ Date: 2026-05-29
   `add_window` namespace additive patch API that creates only new
   window/sidebar/agent pane evidence and remains disconnected from
   non-dry-run `ccb reload`.
+- Added append-only `add_agent` namespace additive patch apply: it requires the
+  new layout to expand the last existing agent pane, splits the new managed
+  agent pane from that anchor, preserves old pane evidence, and remains
+  disconnected from non-dry-run reload.
 
 ## In Progress
 
 - Phase 6b additive mutating reload remains in progress. Next work is
-  append-only `add_agent` patching, then new-agent runtime mounts,
-  lease/lifecycle signature updates, and final graph publish.
+  new-agent runtime mounts, lease/lifecycle signature updates, and final graph
+  publish.
 
 ## Next
 
-1. Implement append-only `add_agent` namespace patch apply without opening
-   `ccb reload`.
-2. Wire new-agent runtime mounts behind transaction tests.
-3. Add lease/lifecycle signature update and graph publish handoff tests.
-4. Expose additive mutating reload: view-only, add agent, and add window.
-5. Expose dynamic unload for idle and bounded-draining agents.
-6. Expose replacement only after unload semantics are safe; busy replacement
+1. Wire new-agent runtime mounts behind transaction tests.
+2. Add lease/lifecycle signature update and graph publish handoff tests.
+3. Expose additive mutating reload: view-only, add agent, and add window.
+4. Expose dynamic unload for idle and bounded-draining agents.
+5. Expose replacement only after unload semantics are safe; busy replacement
    remains pending with explicit bounds.
-7. Run the automatic and manual matrix in
+6. Run the automatic and manual matrix in
     [topics/test-matrix.md](topics/test-matrix.md).
 
 ## Deferred

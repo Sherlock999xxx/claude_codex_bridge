@@ -56,10 +56,15 @@ Date: 2026-05-29
 - Phase 6b namespace additive patch API:
   - `add_window` fake-backend apply creates only the new window, optional
     sidebar pane, and new agent panes;
+  - append-only `add_agent` fake-backend apply requires a layout proof that the
+    last existing agent pane is expanded, then splits exactly one new agent pane
+    from that anchor;
   - new pane identities include project id, role, slot key, window, namespace
     epoch, and `managed_by=ccbd`;
   - preserved-agent before/after snapshots are gate evidence only;
-  - append-only `add_agent` remains blocked in this first step;
+  - insert, reorder, move, replace, delete, and arbitrary layout mutations
+    remain blocked;
+  - patch-plan/topology mismatch is blocked before pane mutation;
   - failures before or during patch return diagnostics with graph/runtime/lease
     publish flags false;
   - non-dry-run reload remains rejected.

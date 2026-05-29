@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from ccbd.reload_patch_additive_agents import additive_agent_steps
 from ccbd.services.project_namespace_runtime import build_namespace_topology_plan
 
 
@@ -67,7 +68,7 @@ def build_namespace_patch_plan(
     if not blocked:
         steps.extend(_view_only_steps(op_records))
         steps.extend(_additive_window_steps(old_topology, new_topology))
-        additive_result = _additive_agent_steps(old_topology, new_topology)
+        additive_result = additive_agent_steps(old_topology, new_topology, step_factory=NamespacePatchStep)
         steps.extend(additive_result['steps'])
         blocked.extend(additive_result['blocked'])
         blocked.extend(_missing_additive_agent_steps(op_records, steps))
@@ -205,48 +206,6 @@ def _additive_window_steps(old_topology, new_topology) -> list[NamespacePatchSte
                 )
             )
     return steps
-
-
-def _additive_agent_steps(old_topology, new_topology) -> dict[str, object]:
-    old_windows = _window_map(old_topology)
-    new_windows = _window_map(new_topology)
-    added_windows = set(new_windows) - set(old_windows)
-    steps: list[NamespacePatchStep] = []
-    blocked: list[dict[str, object]] = []
-    for window_name, new_window in new_windows.items():
-        if window_name in added_windows:
-            continue
-        old_window = old_windows.get(window_name)
-        if old_window is None:
-            continue
-        old_agents = tuple(str(item) for item in tuple(getattr(old_window, 'agent_names', ()) or ()))
-        new_agents = tuple(str(item) for item in tuple(getattr(new_window, 'agent_names', ()) or ()))
-        if old_agents == new_agents:
-            continue
-        if tuple(new_agents[: len(old_agents)]) != old_agents:
-            blocked.append(
-                {
-                    'op': 'add_agent',
-                    'window': window_name,
-                    'reason': 'Phase 5 additive patch only supports appending new agents after existing panes',
-                }
-            )
-            continue
-        anchor = old_agents[-1] if old_agents else None
-        for agent_name in new_agents[len(old_agents) :]:
-            steps.append(
-                NamespacePatchStep(
-                    action='create_agent_pane',
-                    window=window_name,
-                    agent=agent_name,
-                    role='agent',
-                    slot_key=agent_name,
-                    anchor_agent=anchor,
-                    reason='new agent appended to existing managed window',
-                )
-            )
-            anchor = agent_name
-    return {'steps': steps, 'blocked': blocked}
 
 
 def _missing_additive_agent_steps(

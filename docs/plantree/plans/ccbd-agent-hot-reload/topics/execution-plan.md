@@ -246,11 +246,16 @@ Phase 6b first-step status:
 
 - Added `ProjectNamespaceController.apply_additive_patch(...)` and
   `NamespacePatchApplyResult`.
-- The implementation supports only `add_window` patch plans. Append-only
-  `add_agent` is still blocked.
+- The implementation supports `add_window` and append-only `add_agent`
+  namespace patch plans.
+- Append-only `add_agent` requires the new layout tree to expand the last
+  existing agent pane; merely adding an agent name to the end of a different
+  window layout is blocked.
+- Insert, reorder, move, replace, delete, and arbitrary layout mutations remain
+  blocked.
 - Tests use a fake tmux backend and assert the patch path does not call full
   namespace ensure/recreate/reflow/kill paths.
-- The API creates only new window/sidebar/agent pane evidence and does not
+- The API creates only new window/sidebar/agent pane evidence. It does not
   mount providers, write runtime authority, update lease/lifecycle, or publish
   a service graph.
 - Non-dry-run `project_reload_config` and `ccb reload` remain rejected.

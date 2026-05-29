@@ -92,8 +92,9 @@ Add these before opening non-dry-run reload:
 
 ## Add Agent Append
 
-The Phase 5 planner only accepts append-only changes where the old window agent
-list is a prefix of the new list. Phase 6b should implement this by:
+The planner/apply boundary accepts append-only changes only when the old window
+agent list is a prefix of the new list and the new layout tree expands the last
+existing agent leaf. Phase 6b implements this by:
 
 1. Loading the current namespace and verifying project id, tmux socket path,
    session name, namespace epoch, window, role, slot key, and
@@ -107,12 +108,11 @@ list is a prefix of the new list. Phase 6b should implement this by:
 5. Returning `agent_panes` only for new agents and `preserved_after` for the
    preservation gate.
 
-Missing narrow API: a supported append splitter that computes the split
-direction/percent for the appended leaf without parsing the whole new layout
-into a full-window materialization that would touch old panes. Until that API
-exists, Phase 6b should accept only a constrained append placement such as
-"split after anchor with default horizontal/right or bottom policy" and record
-the limitation.
+Implemented narrow API: a pure rightmost-leaf append proof computes the split
+direction for each appended leaf without parsing the whole new layout into a
+full-window materialization that would touch old panes. Layouts that add an
+agent name but require changing any old pane outside that last-leaf expansion
+remain blocked.
 
 ## Add Window
 
@@ -255,10 +255,10 @@ state and load failure, and `reload_patch` reports a broad scope failure. Phase
 6b should return a small diagnostic object instead, while preserving the
 existing dry-run payload shape for compatibility.
 
-## Phase 6b First Step
+## Phase 6b Namespace Patch Steps
 
-The smallest implementation step is not enabling `ccb reload`. First add a fake
-backend unit-tested namespace patch apply API for `add_window` only:
+The first implementation step was not enabling `ccb reload`. It added a fake
+backend unit-tested namespace patch apply API for `add_window`:
 
 - input: Phase 5 `namespace_patch_plan`, old/new topology, and current
   namespace;
@@ -274,11 +274,16 @@ Implementation status:
 
 - `ProjectNamespaceController.apply_additive_patch(...)` now exists and returns
   `NamespacePatchApplyResult`.
-- The first implementation supports `add_window` only and blocks append-only
-  `add_agent`.
+- The implementation supports `add_window` and append-only `add_agent`.
+- Append-only `add_agent` requires the new layout tree to expand the last
+  existing agent pane. It splits one new managed pane from that anchor and
+  writes CCB identity evidence for the new pane only.
+- Insert, reorder, move, replace, delete, and arbitrary layout mutations remain
+  blocked.
 - The fake-backend tests cover new window/sidebar/agent pane creation,
-  `managed_by=ccbd` identity evidence, preservation snapshots, failure
-  diagnostics, and continued non-dry-run reload rejection.
+  append-only agent pane creation, `managed_by=ccbd` identity evidence,
+  preservation snapshots, patch-plan/topology mismatch, failure diagnostics, and
+  continued non-dry-run reload rejection.
 - The API is not wired into `project_reload_config`; it does not mount
   providers, write runtime authority, update lease/lifecycle, publish a graph,
   or add config watching.
