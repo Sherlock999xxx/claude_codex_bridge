@@ -68,6 +68,20 @@ Date: 2026-05-29
   - failures before or during patch return diagnostics with graph/runtime/lease
     publish flags false;
   - non-dry-run reload remains rejected.
+- Phase 6b additive runtime mount helper:
+  - fake `run_start_flow` receives only `patch_result.agent_panes` new agents
+    and explicit `namespace_agent_panes`;
+  - `cleanup_tmux_orphans=false`, no config watch, and no full namespace
+    ensure/recreate/reflow/kill path;
+  - preserved runtime authority records are unchanged before/after helper
+    execution;
+  - successful helper writes runtime authority only for new agents through the
+    existing `RuntimeService` path;
+  - start-flow failure does not publish a graph or update lease/lifecycle
+    signature;
+  - partial start-flow failure may leave new-agent authority residue, but
+    diagnostics must mark graph and lease/lifecycle publish false;
+  - non-dry-run reload remains rejected.
 - Bounded drain/retire state:
   - idle intent transitions immediately to `idle_ready` / `retiring`;
   - busy intent remains `waiting` / `draining` until timeout;

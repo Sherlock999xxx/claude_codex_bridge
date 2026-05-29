@@ -258,6 +258,14 @@ Phase 6b first-step status:
 - The API creates only new window/sidebar/agent pane evidence. It does not
   mount providers, write runtime authority, update lease/lifecycle, or publish
   a service graph.
+- Added `run_additive_agent_mounts(...)` as the next internal helper. It is not
+  wired into `project_reload_config`; tests inject `run_start_flow` and prove
+  only namespace-patch-created new agents are mounted through the existing
+  runtime authority path.
+- Runtime mount helper failures keep graph publish and lease/lifecycle signature
+  updates false. If the existing start flow writes a new-agent runtime record
+  before failing, that record is explicit new-agent residue and preserved agents
+  must remain unchanged.
 - Non-dry-run `project_reload_config` and `ccb reload` remain rejected.
 
 Deliverables:

@@ -287,3 +287,37 @@ Implementation status:
 - The API is not wired into `project_reload_config`; it does not mount
   providers, write runtime authority, update lease/lifecycle, publish a graph,
   or add config watching.
+
+## Phase 6b Runtime Mount Helper
+
+`run_additive_agent_mounts(...)` is now the internal runtime handoff for the
+next transaction step. It accepts the target service graph, current namespace,
+and a successful `NamespacePatchApplyResult`, then calls the existing
+`run_start_flow(...)` path only for `patch_result.agent_panes`.
+
+Current status:
+
+- It uses the target graph's `RuntimeSupervisor` state for config, paths,
+  runtime service, project id, clock, and start policy. This preserves the
+  existing start-flow and `RuntimeService.attach(...)` authority semantics
+  instead of inventing a reload-specific runtime writer.
+- It passes explicit `namespace_agent_panes`, `cleanup_tmux_orphans=False`,
+  `interactive_tmux_layout=True`, `fresh_namespace=False`, and
+  `fresh_workspace=False`.
+- Tests inject a fake `run_start_flow` so no provider or real tmux backend is
+  launched in this phase.
+- It rejects attempts to mount preserved agents or agents not present in the
+  target graph config.
+- It snapshots preserved runtime authority before and after the start flow and
+  fails before publish if any preserved record changes.
+- It reports `graph_published=false`, `lease_or_lifecycle_written=false`,
+  `cleanup_tmux_orphans=false`, and `config_watch_started=false` on success and
+  failure.
+- If start flow writes a new-agent runtime record and then fails, the helper
+  reports partial failure with `runtime_authority_written_agents` limited to the
+  new agent. That residue remains outside the published desired graph until the
+  later lease/lifecycle and graph-publish handoff succeeds.
+
+Remaining Phase 6b risk is the signature handoff: lease/lifecycle config
+signature updates and service graph publish still need a transaction test before
+non-dry-run `ccb reload` can be enabled.

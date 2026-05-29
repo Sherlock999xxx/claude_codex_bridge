@@ -53,22 +53,24 @@ Date: 2026-05-29
   new layout to expand the last existing agent pane, splits the new managed
   agent pane from that anchor, preserves old pane evidence, and remains
   disconnected from non-dry-run reload.
+- Added the Phase 6b new-agent runtime mount helper: it calls the existing
+  start-flow/runtime authority path only for namespace-patch-created agent
+  panes, proves preserved runtime authority is unchanged, and remains
+  disconnected from non-dry-run reload.
 
 ## In Progress
 
 - Phase 6b additive mutating reload remains in progress. Next work is
-  new-agent runtime mounts, lease/lifecycle signature updates, and final graph
-  publish.
+  lease/lifecycle signature updates and final graph publish.
 
 ## Next
 
-1. Wire new-agent runtime mounts behind transaction tests.
-2. Add lease/lifecycle signature update and graph publish handoff tests.
-3. Expose additive mutating reload: view-only, add agent, and add window.
-4. Expose dynamic unload for idle and bounded-draining agents.
-5. Expose replacement only after unload semantics are safe; busy replacement
+1. Add lease/lifecycle signature update and graph publish handoff tests.
+2. Expose additive mutating reload: view-only, add agent, and add window.
+3. Expose dynamic unload for idle and bounded-draining agents.
+4. Expose replacement only after unload semantics are safe; busy replacement
    remains pending with explicit bounds.
-6. Run the automatic and manual matrix in
+5. Run the automatic and manual matrix in
     [topics/test-matrix.md](topics/test-matrix.md).
 
 ## Deferred
