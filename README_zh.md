@@ -5,12 +5,12 @@
 <p>
   <img src="https://img.shields.io/badge/v7-multi--agent--workspace-0B7285?style=for-the-badge" alt="v7 multi-agent workspace">
   <img src="https://img.shields.io/badge/terminal-tmux-2F9E44?style=for-the-badge" alt="tmux">
-  <img src="https://img.shields.io/badge/providers-Codex%20%7C%20Claude%20%7C%20Gemini%20%7C%20OpenCode-CF1322?style=for-the-badge" alt="providers">
+  <img src="https://img.shields.io/badge/providers-Codex%20%7C%20Claude%20%7C%20Gemini%20%7C%20OpenCode%20%7C%20Antigravity-CF1322?style=for-the-badge" alt="providers">
 </p>
 
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20WSL-lightgrey.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
-[![Version](https://img.shields.io/badge/version-7.2.0-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-7.2.1-orange.svg)]()
 [![Release](https://img.shields.io/badge/install-release--first-orange.svg)]()
 
 **中文** | [English](README.md)
@@ -50,14 +50,14 @@
 | :--- | :--- | :--- |
 | [Claude Code 原生 subagents](https://code.claude.com/docs/en/sub-agents) / [agent teams](https://code.claude.com/docs/en/agent-teams) | Claude Code 内部的原生分工。 | 你主要留在 Claude Code，并接受更多协调由 Claude lead 处理。 |
 | [Hive / OpenHive](https://github.com/aden-hive/hive) | 面向生产工作流的多 agent harness。 | 你要状态、恢复、观测、成本控制和图式工作流。 |
-| CCB | 可见、可控、混合 provider 的本地 CLI agent 工作台。 | 你要把 Codex、Claude、Gemini、OpenCode 等真实 CLI 放到一个项目终端里操作。 |
+| CCB | 可见、可控、混合 provider 的本地 CLI agent 工作台。 | 你要把 Codex、Claude、Gemini、OpenCode、Antigravity 等真实 CLI 放到一个项目终端里操作。 |
 
 <details>
 <summary><b>展开：模型、可控性、上下文和复杂工作流怎么区别？</b></summary>
 
 | 关键问题 | Claude Code 原生 | Hive / OpenHive | CCB |
 | :--- | :--- | :--- | :--- |
-| 能否使用不同家的模型 | 可给 teammate / subagent 指定 Claude 模型；整体仍在 Claude Code 体系内。 | 通过 LiteLLM 路线支持大量 hosted / local provider。 | 按 agent 选择 Codex、Claude、Gemini、OpenCode、Droid 等，并可设置独立 model / key / url。 |
+| 能否使用不同家的模型 | 可给 teammate / subagent 指定 Claude 模型；整体仍在 Claude Code 体系内。 | 通过 LiteLLM 路线支持大量 hosted / local provider。 | 按 agent 选择 Codex、Claude、Gemini、OpenCode、Droid、Antigravity 等，并可设置独立 model / key / url。 |
 | 过程是否可见 | in-process 或 split panes，取决于模式和终端。 | 强调 runtime observability 和控制台视角。 | 默认就是 tmux 可见 pane，用户能直接点击、输入、复制、观察每个 CLI。 |
 | 拓扑是否可控 | 可自然语言指定队友，但运行时协调较多交给 lead。 | 由目标生成图式拓扑，偏 harness。 | 配置文件显式定义 agent、窗口、pane、worktree 和 sidebar。 |
 | 上下文是否可管理 | subagent / teammate 有独立上下文；team 有任务和消息状态。 | 角色记忆、状态持久化、恢复能力是核心卖点。 | 每个 CLI 保留自己的 provider 会话；项目共享记忆和 per-agent 记忆可选。 |
@@ -430,7 +430,7 @@ CCB 不要求你离开编辑器。常见方式是：编辑器负责写代码，C
 
 - Python 3.10+
 - `tmux`
-- 至少一个你要使用的 agent CLI，例如 Codex、Claude、Gemini、OpenCode 或 Droid
+- 至少一个你要使用的 agent CLI，例如 Codex、Claude、Gemini、OpenCode、Droid 或 Antigravity
 - Linux、macOS 或 WSL
 
 当前 v7 / 新版本不声明原生 Windows 支持。原生 Windows 只支持到 v5 线；如果你在 Windows 上使用新版本，推荐使用 WSL，并让 `ccb` 与 agent CLI 都运行在 WSL 内。
@@ -511,6 +511,17 @@ v7 线重点：
 - 加固 tmux、Ghostty、release helper、Codex trust 和 provider 会话恢复路径。
 
 <details open>
+<summary><b>v7.2.1</b> - Antigravity Runtime Follow-Up</summary>
+
+- 补齐 `agy` / Google Antigravity 的 runtime 和 session 管线：provider runtime spec、client spec、provider-core 公共导出，以及 `.agy-<agent>-session` 命名。
+- 增加命名 Antigravity pane 启动回归覆盖，包含 `AGY_START_CMD`、auto-permission、restore continuation 和 prepared-state 兼容。
+- 对齐 README provider 列表和发布面，让 Antigravity 与 Codex、Claude、Gemini、OpenCode、Droid 一起出现在用户可见说明中。
+- 明确 no-change reload 语义：配置无变化时执行非 dry-run `ccb reload` 返回 `noop` / `no_op`，且不发布 graph。
+- 增加 Agent Roles 公开规格项目规划文档，作为未来 host-neutral RolePack 项目的设计记录。
+
+</details>
+
+<details>
 <summary><b>v7.2.0</b> - Role Packs And Managed Tools Release</summary>
 
 - 新增 Role Pack 体验面，内置 `ccb.archi` 架构师 role，包含 role memory、Codex/Claude skill 投影和项目 role lock。

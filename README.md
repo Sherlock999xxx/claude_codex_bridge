@@ -5,12 +5,12 @@
 <p>
   <img src="https://img.shields.io/badge/v7-multi--agent--workspace-0B7285?style=for-the-badge" alt="v7 multi-agent workspace">
   <img src="https://img.shields.io/badge/terminal-tmux-2F9E44?style=for-the-badge" alt="tmux">
-  <img src="https://img.shields.io/badge/providers-Codex%20%7C%20Claude%20%7C%20Gemini%20%7C%20OpenCode-CF1322?style=for-the-badge" alt="providers">
+  <img src="https://img.shields.io/badge/providers-Codex%20%7C%20Claude%20%7C%20Gemini%20%7C%20OpenCode%20%7C%20Antigravity-CF1322?style=for-the-badge" alt="providers">
 </p>
 
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20WSL-lightgrey.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
-[![Version](https://img.shields.io/badge/version-7.2.0-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-7.2.1-orange.svg)]()
 [![Release](https://img.shields.io/badge/install-release--first-orange.svg)]()
 
 **English** | [中文](README_zh.md)
@@ -50,14 +50,14 @@ Multi-agent systems are not one fixed shape. Use the short table first; expand t
 | :--- | :--- | :--- |
 | [Claude Code native subagents](https://code.claude.com/docs/en/sub-agents) / [agent teams](https://code.claude.com/docs/en/agent-teams) | Native delegation inside Claude Code. | You mostly stay in Claude Code and want more coordination handled by a Claude lead. |
 | [Hive / OpenHive](https://github.com/aden-hive/hive) | Production-oriented multi-agent workflow harness. | You need state, recovery, observability, cost controls, and graph workflows. |
-| CCB | Visible, controllable local CLI-agent workspace with mixed providers. | You want Codex, Claude, Gemini, OpenCode, and other real CLIs in one project terminal. |
+| CCB | Visible, controllable local CLI-agent workspace with mixed providers. | You want Codex, Claude, Gemini, OpenCode, Antigravity, and other real CLIs in one project terminal. |
 
 <details>
 <summary><b>Details: model choice, control, context, and complex workflows</b></summary>
 
 | Question | Claude Code native | Hive / OpenHive | CCB |
 | :--- | :--- | :--- | :--- |
-| Different model vendors? | Can choose Claude models for teammates/subagents; overall path is still Claude Code. | LiteLLM route covers many hosted and local providers. | Choose Codex, Claude, Gemini, OpenCode, Droid, and per-agent model/key/url. |
+| Different model vendors? | Can choose Claude models for teammates/subagents; overall path is still Claude Code. | LiteLLM route covers many hosted and local providers. | Choose Codex, Claude, Gemini, OpenCode, Droid, Antigravity, and per-agent model/key/url. |
 | Is the process visible? | In-process or split panes depending on mode. | Runtime observability and dashboard-style control. | Real tmux panes by default; users can click, type, copy, and inspect each CLI. |
 | Is topology controllable? | Natural-language teammate setup, with much coordination handled by the lead. | Goal-generated graph-like topology, harness oriented. | Config explicitly defines agents, windows, panes, worktrees, and sidebar behavior. |
 | Is context manageable? | Subagents/teammates have separate contexts; teams have task and message state. | Role memory, durable state, and recovery are core design points. | Each CLI keeps its provider session; shared project memory and per-agent memory are optional. |
@@ -437,7 +437,7 @@ CCB does not require leaving your editor. A common setup is: editor for code, CC
 
 - Python 3.10+
 - `tmux`
-- At least one agent CLI you plan to use, such as Codex, Claude, Gemini, OpenCode, or Droid
+- At least one agent CLI you plan to use, such as Codex, Claude, Gemini, OpenCode, Droid, or Antigravity
 - Linux, macOS, or WSL
 
 Current v7 / newer versions do not claim native Windows support. Native Windows support only applies to the v5 line. If you are on Windows and want current versions, use WSL and keep both `ccb` and agent CLIs inside WSL.
@@ -518,6 +518,17 @@ v7 highlights:
 - Hardened tmux, Ghostty, release helper, Codex trust, and provider session restore paths.
 
 <details open>
+<summary><b>v7.2.1</b> - Antigravity Runtime Follow-Up</summary>
+
+- Completes `agy` / Google Antigravity runtime and session plumbing with provider runtime specs, client specs, public provider-core exports, and `.agy-<agent>-session` naming.
+- Adds regression coverage for named Antigravity pane launches using `AGY_START_CMD`, auto-permission, restore continuation, and prepared-state compatibility.
+- Aligns README provider lists and release surface so Antigravity is visible alongside Codex, Claude, Gemini, OpenCode, and Droid.
+- Clarifies no-change reload semantics: non-dry-run `ccb reload` with no config delta returns `noop` / `no_op` without publishing a graph.
+- Adds Agent Roles public specification planning notes for the future host-neutral RolePack project.
+
+</details>
+
+<details>
 <summary><b>v7.2.0</b> - Role Packs And Managed Tools Release</summary>
 
 - Adds the Role Pack surface with the built-in `ccb.archi` architecture role, role memory, Codex/Claude skill projection, and project role locks.

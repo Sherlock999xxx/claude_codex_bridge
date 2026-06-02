@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## v7.2.1 (2026-06-02)
+
+### Antigravity Runtime Follow-Up
+
+- **Antigravity Runtime Specs Completed**: `agy` now has provider runtime/client specs, public provider-core exports, and `.agy-<agent>-session` naming alongside the backend registration added in v7.2.0.
+- **Antigravity Launch Coverage Added**: tests now cover named Antigravity pane launch, `AGY_START_CMD`, auto-permission, restore continuation, and prepared-state compatibility.
+- **Provider README Surface Aligned**: README and README_zh now show Antigravity in the top provider badge, comparison tables, and install prerequisites.
+- **Reload No-Change Semantics Clarified**: docs and tests describe non-dry-run no-change reload as `noop` / `no_op` with no graph publish.
+- **Agent Roles Planning Added**: plantree now records the future host-neutral `agent-roles` RolePack specification project plan.
+
 ## v7.2.0 (2026-06-02)
 
 ### Role Packs And Managed Tools Release
