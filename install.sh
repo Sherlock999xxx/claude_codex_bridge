@@ -2787,7 +2787,7 @@ provision_role_packs() {
   if [[ "$requested" != "1" && "$requested" != "true" && "$requested" != "on" && "$requested" != "yes" ]]; then
     if [[ ! -t 0 || ! -t 1 ]]; then
       echo "INFO: Role Pack provisioning skipped in non-interactive install."
-      echo "      Run 'ccb roles update agentroles.archi' later to refresh roles and dependencies."
+      echo "      Run 'ccb roles install agentroles.archi' later to install roles and dependencies."
       return 0
     fi
     printf "Install catalog Role Packs and dependencies now? [Y/n] "
@@ -2796,7 +2796,7 @@ provision_role_packs() {
     case "$answer" in
       n|N|no|NO|No)
         echo "INFO: Role Pack provisioning skipped."
-        echo "      Run 'ccb roles update agentroles.archi' later to refresh roles and dependencies."
+        echo "      Run 'ccb roles install agentroles.archi' later to install roles and dependencies."
         return 0
         ;;
       *) ;;
@@ -2818,6 +2818,14 @@ provision_role_packs() {
     rm -f "$log_file"
     echo "OK: Role Packs ready"
     return 0
+  fi
+  if grep -qiE 'role .*not installed|run .*roles install|run agent-roles install' "$log_file" 2>/dev/null; then
+    echo "INFO: Role Pack not installed yet; installing agentroles.archi."
+    if CODEX_BIN_DIR="$BIN_DIR" "$ccb_entry" roles install agentroles.archi >"$log_file" 2>&1; then
+      rm -f "$log_file"
+      echo "OK: Role Packs ready"
+      return 0
+    fi
   fi
   echo "WARN: Role Pack provisioning failed"
   sed 's/^/   /' "$log_file" 2>/dev/null || true

@@ -36,6 +36,8 @@ def test_install_script_provisions_role_packs_softly() -> None:
     assert 'Install catalog Role Packs and dependencies now?' in text
     assert 'non-interactive install' in text
     assert 'roles update agentroles.archi' in text
+    assert 'Role Pack not installed yet; installing agentroles.archi.' in text
+    assert 'roles install agentroles.archi' in text
 
 
 def test_sidebar_bin_wrapper_is_source_install_fallback() -> None:
