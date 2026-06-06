@@ -5,7 +5,7 @@
 ### Architec NPM Tooling And Provider Stability Patch
 
 - **Archi Role Tooling Simplified**: `agentroles.archi` now uses the global
-  `@seemseam/architec` npm package as the single Architec tool source. CCB no
+  `@seemseam/archi` npm package as the single Architec tool source. CCB no
   longer tries to split Hippo, llmgateway, editable git checkouts, or managed
   pip/venv installs into separate Archi dependencies.
 - **Archi Doctor Aligned With Bundled Capabilities**: `ccb roles install`,
@@ -14,7 +14,7 @@
   capabilities instead of CCB-managed Python tool internals.
 - **Legacy `ccb-arch` Forwarder Updated**: `bin/ccb-arch` forwards directly to
   `archi` when available and otherwise prints the required
-  `npm install -g @seemseam/architec` command.
+  `npm install -g @seemseam/archi` command.
 - **OpenCode Autoupdate Disabled In Managed Panes**: generated `opencode.json`
   now sets `autoupdate = false`, and managed OpenCode launches include
   `OPENCODE_DISABLE_AUTOUPDATE=true` so CCB-owned panes do not self-update

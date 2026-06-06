@@ -521,9 +521,9 @@ v7 highlights:
 <details open>
 <summary><b>v7.3.3</b> - Architec NPM Tooling And Provider Stability Patch</summary>
 
-- Simplifies `agentroles.archi` tooling around the global `@seemseam/architec` npm package; CCB no longer manages separate Hippo, llmgateway, pip, venv, git, or editable Archi dependencies.
+- Simplifies `agentroles.archi` tooling around the global `@seemseam/archi` npm package; CCB no longer manages separate Hippo, llmgateway, pip, venv, git, or editable Archi dependencies.
 - Aligns `ccb roles install/update/doctor agentroles.archi` with the npm-provided `archi` CLI and bundled Hippo/llmgateway capabilities.
-- Updates `bin/ccb-arch` to forward to `archi`, with a clear `npm install -g @seemseam/architec` hint when the CLI is missing.
+- Updates `bin/ccb-arch` to forward to `archi`, with a clear `npm install -g @seemseam/archi` hint when the CLI is missing.
 - Disables OpenCode autoupdate for managed panes through `opencode.json` and `OPENCODE_DISABLE_AUTOUPDATE=true`.
 - Refreshes inherited `ccb-config` skills for config-only use, language-following behavior, YAML description quoting, clearer menu grouping, and sidebar pane restart guidance.
 - Adds the config-designer UI plan tree and includes the main-branch `@percent` layout token plus Antigravity lifecycle cleanup updates.
